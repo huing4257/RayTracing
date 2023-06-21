@@ -8,7 +8,9 @@ ENDIF()
 SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 SET(RT_SOURCES
-        src/main.cpp )
+        src/main.cpp
+        src/mesh.cpp
+        )
 
 SET(RT_INCLUDES
         include/vector.h
@@ -16,6 +18,8 @@ SET(RT_INCLUDES
         include/hit.h
         include/plane.hpp
         include/triangle.hpp
+        include/sphere.hpp
+        include/mesh.hpp
         )
 
 SET(CMAKE_CXX_STANDARD 14)
