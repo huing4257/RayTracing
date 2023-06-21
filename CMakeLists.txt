@@ -20,7 +20,7 @@ SET(RT_INCLUDES
         include/triangle.hpp
         include/sphere.hpp
         include/mesh.hpp
-        )
+        include/curve.hpp include/revsurface.hpp)
 
 SET(CMAKE_CXX_STANDARD 14)
 

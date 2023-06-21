@@ -16,6 +16,8 @@ struct Vec {        // Usage: time ./smallpt4k && xv image.ppm
 
     Vec operator+(const Vec &b) const { return {x + b.x, y + b.y, z + b.z}; }
 
+    Vec operator+=(const Vec &b) { return {x += b.x, y += b.y, z += b.z}; }
+
     Vec operator-(const Vec &b) const { return {x - b.x, y - b.y, z - b.z}; }
 
     Vec operator*(double b) const { return {x * b, y * b, z * b}; }

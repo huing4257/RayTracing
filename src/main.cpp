@@ -9,17 +9,25 @@
 #include "../include/plane.hpp"
 #include "../include/triangle.hpp"
 #include "../include/mesh.hpp"
+#include "../include/revsurface.hpp"
+
+BezierCurve pCurve(std::vector<Vec>{Vec(10, 0, 0),
+                                 Vec(2, 1, 0),
+                                 Vec(5, 10, 0),
+                                 Vec(10, 20, 0)});
 
 Object3D *objs[] = {
         //Scene: radius, position, emission, color, material
         new Sphere(1e5, Vec(1e5 + 1, 40.8, 81.6), Vec(), Vec(.75, .25, .25), DIFF),  //Left
+        new Sphere(5, Vec(10, 10, 10), Vec(), Vec(.25, .25, .75), REFR),//Rght
+        new Sphere(5, Vec(40, 40, 40), Vec(), Vec(.25, .25, .75), REFR),//Rght
         new Sphere(1e5, Vec(-1e5 + 99, 40.8, 81.6), Vec(), Vec(.25, .25, .75), DIFF),//Rght
         new Sphere(1e5, Vec(50, 40.8, 1e5), Vec(), Vec(.75, .75, .75), DIFF),        //Back
         new Sphere(1e5, Vec(50, 40.8, -1e5 + 170), Vec(), Vec(), DIFF),              //Frnt
         new Sphere(1e5, Vec(50, 1e5, 81.6), Vec(), Vec(.75, .75, .75), DIFF),        //Botm
         new Sphere(1e5, Vec(50, -1e5 + 81.6, 81.6), Vec(), Vec(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-        new Mesh("../mesh/bunny_200.obj", DIFF,  Vec(0, 0, 0), Vec(0.75, 0.75, 0.75)),
+        new RevSurface(&pCurve,60,40,DIFF,Vec(0, 0, 0),Vec(0, 0, 0) ),
 };
 
 inline double clamp(double x) {
@@ -83,7 +91,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 512, h = 384 , samps = argc == 2 ? atoi(argv[1]) / 4 : 100;// # samples
+    int w = 128, h = 96, samps = argc == 2 ? atoi(argv[1]) / 4 : 100;// # samples
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
 
