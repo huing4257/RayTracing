@@ -9,7 +9,7 @@
 
 class Box{
 public:
-    static bool is_intersect(Vec min, Vec max,const Ray &r, double tmin, Hit &h) {
+    static bool is_intersect(Vec min, Vec max,const Ray &r, double tmin) {
         double t11 = (min.x - r.origin.x) / r.direction.x;
         double t12 = (max.x - r.origin.x) / r.direction.x;
         double t13 = (min.y - r.origin.y) / r.direction.y;

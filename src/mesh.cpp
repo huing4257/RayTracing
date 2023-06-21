@@ -13,7 +13,7 @@
 
 double Mesh::intersect(const Ray &r, double tmin, Hit &h) {
     // Optional: Change this brute force method into a faster one.
-    if (!Box::is_intersect(min, max, r, tmin, h)) return 0;
+    if (!Box::is_intersect(min, max, r, tmin)) return 0;
     bool result = false;
     for (int triId = 0; triId < (int) t.size(); ++triId) {
         TriangleIndex &triIndex = t[triId];
