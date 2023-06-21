@@ -13,7 +13,7 @@ class RevSurface : public Object3D {
 public:
     RevSurface(Curve *pCurve, double x, double z, Refl_t refl_, Vec e_, Vec c_) : pCurve(pCurve), x(x), z(z),
                                                                                   Object3D(refl_, e_, c_) {
-        double max_x=1e-6, max_y=1e-6;
+        double max_x = 1e-6, max_y = 1e-6;
         // Check flat.
         for (const auto &cp: pCurve->getControls()) {
             max_x = std::max(max_x, cp.x);
@@ -23,8 +23,8 @@ public:
                 exit(0);
             }
         }
-        vmin = Vec(x-max_x, max_y, z-max_x);
-        vmax = Vec(x+max_x, max_y, z+max_x);
+        vmin = Vec(x - max_x, max_y, z - max_x);
+        vmax = Vec(x + max_x, max_y, z + max_x);
 
     }
 
@@ -33,23 +33,23 @@ public:
     }
 
     double intersect(const Ray &r, double tmin, Hit &h) override {
-        if (!Box::is_intersect(vmin, vmax,r,tmin)) return 0;
+        if (!Box::is_intersect(vmin, vmax, r, tmin)) return 0;
         double t = solve_t(r, tmin, h);
         if (t <= 0 || t >= 1) return 0;
         CurvePoint pos = pCurve->get_pos(t);
-        double tr = (pos.V.y - r.origin.y) / r.direction.y;
-        Vec hit_pos = r.origin + r.direction * tr;
-        Vec rad = Vec(hit_pos.x - x, 0, hit_pos.z - z).norm();
-        Vec new_T = Vec(pos.T.x * rad.x, pos.T.y, pos.T.x * rad.z).norm();
-        Vec normal = (new_T % rad) % (new_T).norm();
-        if (tr < h.t) {
+        double tr = (pos.V.y - r.origin.y) / abs(r.direction.y);
+        if (tr > tmin && tr < h.t) {
+            Vec hit_pos = r.origin + r.direction * tr;
+            Vec rad = Vec(hit_pos.x - x, 0, hit_pos.z - z).norm();
+            Vec new_T = Vec(pos.T.x * rad.x, pos.T.y, pos.T.x * rad.z).norm();
+            Vec normal = (new_T % rad) % (new_T).norm();
             h.t = tr;
             h.hit_pos = hit_pos;
             h.hit_normal = normal;
             h.hit_color = color;
             h.refl = refl;
         }
-        return t;
+        return 0;
     }
 
     double solve_t(const Ray &r, double tmin, Hit &h) {

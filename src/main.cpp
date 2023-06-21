@@ -12,22 +12,20 @@
 #include "../include/revsurface.hpp"
 
 BezierCurve pCurve(std::vector<Vec>{Vec(10, 0, 0),
-                                 Vec(2, 1, 0),
-                                 Vec(5, 10, 0),
-                                 Vec(10, 20, 0)});
+                                    Vec(2, 1, 0),
+                                    Vec(5, 10, 0),
+                                    Vec(10, 20, 0)});
 
 Object3D *objs[] = {
         //Scene: radius, position, emission, color, material
-        new Sphere(1e5, Vec(1e5 + 1, 40.8, 81.6), Vec(), Vec(.75, .25, .25), DIFF),  //Left
-        new Sphere(5, Vec(10, 10, 10), Vec(), Vec(.25, .25, .75), REFR),//Rght
-        new Sphere(5, Vec(40, 40, 40), Vec(), Vec(.25, .25, .75), REFR),//Rght
-        new Sphere(1e5, Vec(-1e5 + 99, 40.8, 81.6), Vec(), Vec(.25, .25, .75), DIFF),//Rght
-        new Sphere(1e5, Vec(50, 40.8, 1e5), Vec(), Vec(.75, .75, .75), DIFF),        //Back
-        new Sphere(1e5, Vec(50, 40.8, -1e5 + 170), Vec(), Vec(), DIFF),              //Frnt
-        new Sphere(1e5, Vec(50, 1e5, 81.6), Vec(), Vec(.75, .75, .75), DIFF),        //Botm
-        new Sphere(1e5, Vec(50, -1e5 + 81.6, 81.6), Vec(), Vec(.75, .75, .75), DIFF),//Top
+        new Plane(Vec(1, 0, 0), 0, Vec(0, 0, 0), Vec(.75, .25, .25), DIFF),  //Left
+        new Plane(Vec(1, 0, 0), 100, Vec(0, 0, 0), Vec(.25, .25, .75), DIFF),//Rght
+        new Plane(Vec(0, 0, 1), 0, Vec(), Vec(.75, .75, .75), DIFF),        //Back
+        new Plane(Vec(0, 0, 1), 170, Vec(), Vec(), DIFF),              //Frnt
+        new Plane(Vec(0, 1, 0), 0, Vec(), Vec(.75, .75, .75), DIFF),        //Botm
+        new Plane(Vec(0, 1, 0), 81.8, Vec(), Vec(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-        new RevSurface(&pCurve,60,40,DIFF,Vec(0, 0, 0),Vec(0, 0, 0) ),
+//        new RevSurface(&pCurve,10,10,REFR,Vec(0, 0, 0),Vec(1, 1, 1)*.99 ),
 };
 
 inline double clamp(double x) {
@@ -91,7 +89,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 128, h = 96, samps = argc == 2 ? atoi(argv[1]) / 4 : 100;// # samples
+    int w = 128, h = 96, samps = argc == 2 ? atoi(argv[1]) / 4 : 500;// # samples
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
 
@@ -99,7 +97,7 @@ int main(int argc, char *argv[]) {
 
 #pragma omp parallel for schedule(dynamic, 1) private(r)// OpenMP
     for (int y = 0; y < h; y++) {                       // Loop over image rows
-        fprintf(stderr, "\rRendering (%direction spp) %5.2f%%", samps * 4, 100. * y / (h - 1));
+        fprintf(stderr, "\rRendering (%d spp) %5.2f%%", samps * 4, 100. * y / (h - 1));
         for (unsigned short x = 0, Xi[3] = {0, 0, static_cast<unsigned short>(y * y * y)}; x < w; x++)// Loop cols
             for (int sy = 0, i = (h - y - 1) * w + x; sy < 2; sy++)                                 // 2x2 subpixel rows
                 for (int sx = 0;
