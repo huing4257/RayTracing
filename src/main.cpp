@@ -16,16 +16,17 @@ BezierCurve pCurve(std::vector<Vec>{Vec(10, 0, 0),
                                     Vec(5, 10, 0),
                                     Vec(10, 20, 0)});
 
+Texture texture = Texture("../texture/wood.jpg");
+
 Object3D *objs[] = {
-        //Scene: radius, position, emission, color, material
         new Plane(Vec(1, 0, 0), 0, Vec(0, 0, 0), Vec(.75, .25, .25), DIFF),  //Left
         new Plane(Vec(1, 0, 0), 100, Vec(0, 0, 0), Vec(.25, .25, .75), DIFF),//Rght
         new Plane(Vec(0, 0, 1), 0, Vec(), Vec(.75, .75, .75), DIFF),        //Back
         new Plane(Vec(0, 0, 1), 170, Vec(), Vec(), DIFF),              //Frnt
-        new Plane(Vec(0, 1, 0), 0, Vec(), Vec(.75, .75, .75), DIFF),        //Botm
+        new Plane(Vec(0, 1, 0), 0, Vec(), Vec(.75, .75, .75), DIFF,&texture),        //Botm
         new Plane(Vec(0, 1, 0), 81.8, Vec(), Vec(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-//        new RevSurface(&pCurve,10,10,REFR,Vec(0, 0, 0),Vec(1, 1, 1)*.99 ),
+        new RevSurface(&pCurve,10,10,REFR,Vec(0, 0, 0),Vec(1, 1, 1)*.99 ),
 };
 
 inline double clamp(double x) {
@@ -53,7 +54,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
     if (!intersect(r, t, id, hit)) return {};// if miss, return black
     const Object3D *obj = objs[id];       // the hit object
     Vec n = hit.hit_normal, nl = n.dot(r.direction) < 0 ? n : n * -1;
-    Vec x = hit.hit_pos, f = obj->color;
+    Vec x = hit.hit_pos, f = hit.hit_color;
     double p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y
                                                         : f.z;// max refl
     if (++depth > 5) {
@@ -89,7 +90,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 128, h = 96, samps = argc == 2 ? atoi(argv[1]) / 4 : 500;// # samples
+    int w = 128, h = 96, samps = argc == 2 ? atoi(argv[1]) / 4 : 50;// # samples
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
 

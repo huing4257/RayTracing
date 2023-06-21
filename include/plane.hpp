@@ -4,6 +4,7 @@
 #include "object3d.hpp"
 #include "vector.h"
 #include <cmath>
+#include "texture.h"
 
 // function: ax+by+cz=d
 // choose your representation , add more fields and fill in the functions
@@ -14,9 +15,10 @@ public:
 
     }
 
-    Plane(const Vec &normal, float d, Vec e_, Vec c_, Refl_t refl_) : Object3D(refl_,e_,c_) {
+    Plane(const Vec &normal, float d, Vec e_, Vec c_, Refl_t refl_,Texture* t = nullptr) : Object3D(refl_,e_,c_) {
         this->normal = normal;
         this->d = d;
+        this->texture = t;
     }
 
     ~Plane() override = default;
@@ -27,7 +29,10 @@ public:
             hit.t = t;
             hit.hit_pos = r.origin + r.direction * t;
             hit.hit_normal = normal;
-            hit.hit_color = color;
+            if(texture != nullptr){
+                hit.hit_color = texture->get_color(abs(hit.hit_pos.x), abs(hit.hit_pos.z));
+            }
+            else { hit.hit_color = color; }
             hit.refl = refl;
             return t;
         }
@@ -36,6 +41,7 @@ public:
 
     Vec normal;
     float d;
+    Texture *texture;
 protected:
 };
 
