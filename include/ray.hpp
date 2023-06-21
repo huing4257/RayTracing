@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <iostream>
-#include <vector.h>
+#include "vector.h"
 
 
 // Ray class mostly copied from Peter Shirley and Keith Morley

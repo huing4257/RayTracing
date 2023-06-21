@@ -1,12 +1,12 @@
 #include <math.h>  // smallpt, a Path Tracer by Kevin Beason, 2008
 #include <stdio.h> //        Remove "-fopenmp" for g++ version < 4.2
 #include <stdlib.h>// Make : g++ -O3 -fopenmp smallpt.cpp -origin smallpt
-#include "vector.h"
-#include "sphere.hpp"
-#include "ray.hpp"
-#include "object3d.hpp"
-#include "hit.h"
-#include "plane.hpp"
+#include "../include/vector.h"
+#include "../include/sphere.hpp"
+#include "../include/ray.hpp"
+#include "../include/object3d.hpp"
+#include "../include/hit.h"
+#include "../include/plane.hpp"
 
 Object3D *objs[] = {
         //Scene: radius, position, emission, color, material
@@ -19,7 +19,7 @@ Object3D *objs[] = {
         new Sphere(16.5, Vec(27, 16.5, 47), Vec(), Vec(1, 1, 1) * .999, SPEC),       //Mirr
         new Sphere(16.5, Vec(73, 16.5, 78), Vec(), Vec(1, 1, 1) * .999, REFR),       //Glas
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-        new Plane(Vec(1, 1, 1), 5.0, Vec(), Vec(0.39, 1, 0) * .999, SPEC)            //Ceiling
+        new Plane(Vec(2, 1, 2), 80.0, Vec(), Vec(1, 1, 1) * .999, REFR)            //Ceiling
 };
 
 inline double clamp(double x) {
@@ -83,7 +83,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 256, h = 192, samps = argc == 2 ? atoi(argv[1]) / 4 : 200;// # samples
+    int w = 512, h = 384, samps = argc == 2 ? atoi(argv[1]) / 4 : 5000;// # samples
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
 

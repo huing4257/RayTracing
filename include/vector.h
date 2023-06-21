@@ -13,19 +13,29 @@ struct Vec {        // Usage: time ./smallpt4k && xv image.ppm
         z = z_;
     }
 
-    Vec operator+(const Vec &b) const { return Vec(x + b.x, y + b.y, z + b.z); }
+    Vec operator+(const Vec &b) const { return {x + b.x, y + b.y, z + b.z}; }
 
-    Vec operator-(const Vec &b) const { return Vec(x - b.x, y - b.y, z - b.z); }
+    Vec operator-(const Vec &b) const { return {x - b.x, y - b.y, z - b.z}; }
 
-    Vec operator*(double b) const { return Vec(x * b, y * b, z * b); }
+    Vec operator*(double b) const { return {x * b, y * b, z * b}; }
 
-    Vec mult(const Vec &b) const { return Vec(x * b.x, y * b.y, z * b.z); }
+    Vec operator/(double b) const { return {x / b, y / b, z / b}; }
+
+    Vec mult(const Vec &b) const { return {x * b.x, y * b.y, z * b.z}; }
 
     Vec &norm() { return *this = *this * (1 / sqrt(x * x + y * y + z * z)); }
 
-    double dot(const Vec &b) const { return x * b.x + y * b.y + z * b.z; } // cross:
+    double dot(const Vec &b) const { return x * b.x + y * b.y + z * b.z; }
+
+    // cross:
+    Vec operator%(Vec &b) const { return {y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x}; }
+
     static double dot(const Vec &a, const Vec &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-    Vec operator%(Vec &b) const { return Vec(y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x); }
+
+    static Vec cross(const Vec &a, const Vec &b) {
+        return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
+    }
+
 };
 
 #endif //RT_VECTOR_H
