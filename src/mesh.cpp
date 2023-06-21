@@ -2,7 +2,7 @@
 // Created by 胡 on 2023/6/21.
 //
 
-#include "mesh.hpp"
+#include "../include/mesh.hpp"
 #include <fstream>
 #include <iostream>
 #include <algorithm>

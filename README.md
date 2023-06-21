@@ -5,6 +5,7 @@ clang++ -std=c++14 -Xclang -fopenmp -L/opt/homebrew/opt/libomp/lib -I/opt/homebr
 ./test
 ```
 ```shell
-#windows
-g++ -O3 -fopenmp smallpt.cpp -o smallpt
+#linu
+g++ -O2 -fopenmp src/main.cpp src/mesh.cpp  -o test
+./test
 ```

@@ -106,9 +106,9 @@ int main(int argc, char *argv[]) {
                     c[i] = c[i] + Vec(clamp(r.x), clamp(r.y), clamp(r.z)) * .25;
                 }
     }
-    FILE *f = fopen("../news.ppm", "w");// Write image to PPM file.
+    FILE *f = fopen("news.ppm", "w");// Write image to PPM file.
     fprintf(f, "P3\n%d %d\n%d\n", w, h, 255);
     for (int i = 0; i < w * h; i++)
         fprintf(f, "%d %d %d ", toInt(c[i].x), toInt(c[i].y), toInt(c[i].z));
-    system("python ../convert.py");
+    system("python convert.py");
 }

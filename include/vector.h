@@ -4,6 +4,7 @@
 
 #ifndef RT_VECTOR_H
 #define RT_VECTOR_H
+#include <cmath>
 
 struct Vec {        // Usage: time ./smallpt4k && xv image.ppm
     double x, y, z;                  // position, also color (r,g,b)
