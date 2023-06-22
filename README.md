@@ -20,4 +20,3 @@ x(t)sin\theta = \frac{(y(t)-o_y)}{d_y}d_z+o_z \\
 F'(t)=\frac{2(y(t)-o_y)}{d_y^2}(d_x^2+d_z^2)y'(t) + \frac{2(o_x+o_z)}{d_y}y'(t)-2x(t)x'(t)
 $$
 
-2

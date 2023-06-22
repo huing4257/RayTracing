@@ -5,7 +5,7 @@
 #ifndef RT_TEXTURE_H
 #define RT_TEXTURE_H
 
-#include "vector.h"
+#include "vecmath.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -46,7 +46,7 @@ public:
         double r = int(tex_data[index]) / 255.0;
         double g = int(tex_data[index + 1]) / 255.0;
         double b = int(tex_data[index + 2]) / 255.0;
-        hit.hit_color = Vec(r, g, b);
+        hit.hit_color = Vector3f(r, g, b);
     }
 };
 
@@ -65,7 +65,7 @@ public:
         double r = int(tex_data[index]) / 255.0;
         double g = int(tex_data[index + 1]) / 255.0;
         double b = int(tex_data[index + 2]) / 255.0;
-        hit.hit_normal = hit.hit_normal + Vec(r - 0.5, g - 0.5, b - 0.5);
+        hit.hit_normal = hit.hit_normal + Vector3f(r - 0.5, g - 0.5, b - 0.5);
     }
 };
 

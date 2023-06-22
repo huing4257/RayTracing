@@ -4,13 +4,13 @@
 #include <vector>
 #include "object3d.hpp"
 #include "triangle.hpp"
-#include "vector.h"
+#include <vecmath.h>
 
 
 class Mesh : public Object3D {
 
 public:
-    Mesh(const char *filename,Vec center, Refl_t refl_, Vec e_, Vec c_);
+    Mesh(const char *filename,Vector3f center, Refl_t refl_, Vector3f e_, Vector3f c_);
 
     struct TriangleIndex {
         TriangleIndex() {
@@ -25,10 +25,10 @@ public:
         int x[3]{};
     };
 
-    std::vector<Vec> v;
+    std::vector<Vector3f> v;
     std::vector<TriangleIndex> t;
-    std::vector<Vec> n;
-    Vec min, max;
+    std::vector<Vector3f> n;
+    Vector3f min, max;
     double intersect(const Ray &r, double tmin, Hit &h) override;
 
 private:

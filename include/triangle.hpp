@@ -2,7 +2,7 @@
 #define TRIANGLE_H
 
 #include "object3d.hpp"
-#include "vector.h"
+#include "vecmath.h"
 #include <cmath>
 #include <iostream>
 
@@ -15,21 +15,22 @@ public:
     Triangle() = delete;
 
     // a b c are three vertex positions of the triangle
-    Triangle(const Vec &a, const Vec &b, const Vec &c, Refl_t refl, Vec e_, Vec color) : Object3D(refl, e_, color) {
+    Triangle(const Vector3f &a, const Vector3f &b, const Vector3f &c, Refl_t refl, Vector3f e_, Vector3f color)
+            : Object3D(refl, e_, color) {
         vertices[0] = a;
         vertices[1] = b;
         vertices[2] = c;
-        normal = Vec::cross(b - a, c - a).norm();
+        normal = Vector3f::cross(b - a, c - a).normalized();
     }
 
     double intersect(const Ray &ray, double tmin, Hit &hit) override {
-        Vec e1 = vertices[0] - vertices[1];
-        Vec e2 = vertices[0] - vertices[2];
-        Vec s = vertices[0] - ray.origin;
-        float det = Vec::dot((Vec::cross(ray.direction, e1)), e2);
-        float t = Vec::dot((Vec::cross(s, e1)), e2) / det;
-        float beta = Vec::dot((Vec::cross(ray.direction, e1)), s) / det;
-        float gamma = Vec::dot((Vec::cross(s, e2)), ray.direction / det);
+        Vector3f e1 = vertices[0] - vertices[1];
+        Vector3f e2 = vertices[0] - vertices[2];
+        Vector3f s = vertices[0] - ray.origin;
+        float det = Vector3f::dot((Vector3f::cross(ray.direction, e1)), e2);
+        float t = Vector3f::dot((Vector3f::cross(s, e1)), e2) / det;
+        float beta = Vector3f::dot((Vector3f::cross(ray.direction, e1)), s) / det;
+        float gamma = Vector3f::dot((Vector3f::cross(s, e2)), ray.direction / det);
         float alpha = 1 - beta - gamma;
         if (t > tmin && t < hit.t && alpha >= 0 && beta >= 0 && gamma >= 0) {
             hit.t = t;
@@ -42,8 +43,8 @@ public:
         return false;
     }
 
-    Vec normal;
-    Vec vertices[3];
+    Vector3f normal;
+    Vector3f vertices[3];
 protected:
 
 };

@@ -1,121 +1,121 @@
 #ifndef REVSURFACE_HPP
 #define REVSURFACE_HPP
+// 参数曲面
 
-#include "object3d.hpp"
-#include "curve.hpp"
-#include "box.h"
 #include <tuple>
+#include <vecmath.h>
+#include "curve.hpp"
+#include "object3d.hpp"
+#include "triangle.hpp"
 
-double F_(const Vec &dir, const Vec &origin, double x_t, double y_t) {
-    double x1 = dir.y * dir.y * x_t * x_t;
-    double y1 = y_t - origin.y;
-    double x2 = pow((y1 * dir.x + dir.y * origin.x), 2);
-    double x3 = pow((y1 * dir.z + dir.y * origin.z), 2);
-    return x2 + x3 - x1;
-}
-
-double F_grad(const Vec &dir, const Vec &origin, double x_t, double y_t, double x_grad_t, double y_grad_t) {
-    double x1 = 2 * dir.y * dir.y * x_t * x_grad_t;
-    double y1 = y_t - origin.y;
-    double x2 = 2 * dir.x * y_grad_t * (y1 * dir.x + dir.y * origin.x);
-    double x3 = 2 * dir.z * y_grad_t * (y1 * dir.z + dir.y * origin.z);
-    return x2 + x3 - x1;
-}
+const int resolution = 10;
+const int NEWTON_STEPS = 20;
+const float NEWTON_EPS = 1e-4;
 
 class RevSurface : public Object3D {
-
     Curve *pCurve;
-
+    Vector3f vmin, vmax;
+    // Definition for drawable surface.
+    typedef std::tuple<unsigned, unsigned, unsigned> Tup3u;
+    std::vector<Triangle> triangles;
+    // Surface is just a struct that contains vertices, normals, and
+    // faces.  VV[i] is the position of vertex i, and VN[i] is the normal
+    // of vertex i.  A face is a triple i,j,k corresponding to a triangle
+    // with (vertex i, normal i), (vertex j, normal j), ...
+    // Currently this struct is computed every time when canvas refreshes.
+    // You can store this as member function to accelerate rendering.
 public:
-    RevSurface(Curve *pCurve, double x, double z, Refl_t refl_, Vec e_, Vec c_) : pCurve(pCurve), x(x), z(z),
-                                                                                  Object3D(refl_, e_, c_) {
-        // x always less than 0.
-        double min_x = 0, max_y = 1e-6, min_y = 1e6;
+    RevSurface(Curve *pCurve, Refl_t refl, Vector3f e, Vector3f color)
+            : pCurve(pCurve), Object3D(refl, e, color) {
+        // Check flat.
+        float min_x = 0, max_y = 1e-6, min_y = 1e6;
         for (const auto &cp: pCurve->getControls()) {
-            min_x = std::min(min_x, cp.x);
-            max_y = std::max(max_y, cp.y);
-            min_y = std::min(min_y, cp.y);
-            if (cp.z != 0.0) {
+            min_x = std::min(min_x, cp.x());
+            max_y = std::max(max_y, cp.y());
+            min_y = std::min(min_y, cp.y());
+            if (cp.z() != 0.0) {
                 printf("Profile of revSurface must be flat on xy plane.\n");
                 exit(0);
             }
         }
-        vmin = Vec(x + min_x, min_y, z + min_x);
-        vmax = Vec(x - min_x, max_y, z - min_x);
+        vmin = Vector3f( min_x, min_y, min_x);
+        vmax = Vector3f( - min_x, max_y, - min_x);
     }
 
-    ~RevSurface() override {
-        delete pCurve;
+    ~RevSurface() override { delete pCurve; }
+
+    inline bool intersect(const Ray &r, Hit &h) override {
+        // return meshIntersect(r, h, tmin);
+        return newtonIntersect(r, h);
     }
 
-    double intersect(const Ray &r, double tmin, Hit &h) override {
-        double tr;
-        if (!Box::is_intersect(vmin, vmax, r, tmin, &tr)) return 0;
-        // newton's method
-        Vec p = r.origin + r.direction * tr;
-        double estimate_t = pCurve->estimate(p.y);
-        Vec o = r.origin - Vec(x, 0, z);
-        Vec d = r.direction;
-        for (int i = 0; i < 10; i++) {
-            Vec now_point;
-            Vec now_grad;
-            CurvePoint cp = pCurve->get_pos(estimate_t);
-            now_point = cp.V;
-            now_grad = cp.T;
-            double ft = F_(d, o, now_point.x, now_point.y);
-            double ft_grad = F_grad(r.direction, r.origin, now_point.x, now_point.y, now_grad.x, now_grad.y);
-            // printf("dep: %d", dep);
-            // printf("ft: %f\n", ft);
-            // printf("ft_grad: %f\n", ft_grad);
-            // printf("estimate: %f\n", estimate_t);
-
-            if (abs(ft) < 1e-5) {
-                if (abs(r.direction.y) > 1e-3) {
-                    tr = (now_point.y - r.origin.y) / (r.direction.y);
-                } else {
-
-                    double a = r.direction.z * r.direction.z + r.direction.x + r.direction.x;
-                    double b = 2 * (r.direction.z * r.origin.z + r.direction.x * r.origin.x);
-                    double c = pow(r.origin.x, 2) + pow(r.origin.z, 2) - pow(now_point.x, 2);
-                    tr = (sqrt(pow(b, 2) - 4 * a * c) - b) / (2 * a);
-                }
-                Vec next_origin = r.direction * tr + r.origin;
-
-                if (tr > tmin && pCurve->is_on_curve(next_origin)) {
-
-                    Vec plane_normal(now_grad.y, -now_grad.x, 0);
-                    plane_normal.norm();
-
-                    if (abs(now_point.x) < 1e-4) {
-                        h.t = tr;
-                        h.hit_normal = now_point.y > 0 ? Vec(0, 1, 0) : Vec(0, -1, 0);
-                        h.refl = refl;
-                        h.hit_color = color;
-                        h.hit_pos = r.origin + r.direction * tr;
-                        return tr;
-                    }
-                    double costheta = (r.direction.x * tr + r.origin.x) / now_point.x;
-                    double sintheta = (r.direction.z * tr + r.origin.z) / now_point.x;
-                    Vec new_normal = Vec(costheta * plane_normal.x, plane_normal.y, sintheta * plane_normal.x);
-                    h.t = tr;
-                    h.refl = refl;
-                    h.hit_color = color;
-                    h.hit_pos = r.origin + r.direction * tr;
-                    return tr;
-                }
-            }
-            double step = ft / ft_grad;
-            if (step > 0.05)
-                step = 0.05;
-            else if (step < -0.05)
-                step = -0.05;
-            estimate_t -= step;
+    bool newtonIntersect(const Ray &r, Hit &h) {
+        float t, theta, mu;
+        if (!aabb.intersect(r, t) || t > h.getT()) return false;
+        getUV(r, t, theta, mu);
+        Vector3f normal, point;
+        // cout << "begin!" << endl;
+        if (!newton(r, t, theta, mu, normal, point)) {
+            // cout << "Not Intersect! t:" << t << " theta: " << theta / (2 *
+            // M_PI)
+            //      << " mu: " << mu << endl;
+            return false;
         }
-        return 0;
+        if (!isnormal(mu) || !isnormal(theta) || !isnormal(t)) return false;
+        if (t < 0 || mu < pCurve->range[0] || mu > pCurve->range[1] ||
+            t > h.getT())
+            return false;
+        h.set(t, material, normal.normalized(),
+              material->getColor(theta / (2 * M_PI), mu), point);
+        // cout << "Intersect! t:" << t << " theta: " << theta / (2 * M_PI)
+        //      << " mu: " << mu << endl;
+        return true;
     }
 
-    double x, z; // rotation axis
-    Vec vmin, vmax;
+    bool newton(const Ray &r, float &t, float &theta, float &mu,
+                Vector3f &normal, Vector3f &point) {
+        Vector3f dmu, dtheta;
+        for (int i = 0; i < NEWTON_STEPS; ++i) {
+            if (theta < 0.0) theta += 2 * M_PI;
+            if (theta >= 2 * M_PI) theta = fmod(theta, 2 * M_PI);
+            if (mu >= 1) mu = 1.0 - FLT_EPSILON;
+            if (mu <= 0) mu = FLT_EPSILON;
+            point = getPoint(theta, mu, dtheta, dmu);
+            Vector3f f = r.origin + r.direction * t - point;
+            float dist2 = f.squaredLength();
+            // cout << "Iter " << i + 1 << " t: " << t
+            //      << " theta: " << theta / (2 * M_PI) << " mu: " << mu
+            //      << " dist2: " << dist2 << endl;
+            normal = Vector3f::cross(dmu, dtheta);
+            if (dist2 < NEWTON_EPS) return true;
+            float D = Vector3f::dot(r.direction, normal);
+            t -= Vector3f::dot(dmu, Vector3f::cross(dtheta, f)) / D;
+            mu -= Vector3f::dot(r.direction, Vector3f::cross(dtheta, f)) / D;
+            theta += Vector3f::dot(r.direction, Vector3f::cross(dmu, f)) / D;
+        }
+        return false;
+    }
+
+    Vector3f getPoint(const float &theta, const float &mu, Vector3f &dtheta,
+                 Vector3f &dmu) {
+        Vector3f pt;
+        Quat4f rot;
+        rot.setAxisAngle(theta, Vector3f::UP);
+        Matrix3f rotMat = Matrix3f::rotation(rot);
+        CurvePoint cp = pCurve->getPoint(mu);
+        pt = rotMat * cp.V;
+        dmu = rotMat * cp.T;
+        dtheta = Vector3f(-cp.V.x() * sin(theta), 0, -cp.V.x() * cos(theta));
+        return pt;
+    }
+
+    void getUV(const Ray &r, const float &t, float &theta, float &mu) {
+        Vector3f pt(r.origin + r.direction * t);
+        theta = atan2(-pt.z(), pt.x()) + M_PI;
+        mu = (pCurve->ymax - pt.y()) / (pCurve->ymax - pCurve->ymin);
+    }
+
+    vector<Object3D *> getFaces() override { return {(Object3D *) this}; }
 };
 
-#endif //REVSURFACE_HPP
+#endif  // REVSURFACE_HPP

@@ -9,13 +9,13 @@
 
 class Box{
 public:
-    static bool is_intersect(Vec min, Vec max,const Ray &r, double tmin,double *t = nullptr) {
-        double t11 = (min.x - r.origin.x) / r.direction.x;
-        double t12 = (max.x - r.origin.x) / r.direction.x;
-        double t13 = (min.y - r.origin.y) / r.direction.y;
-        double t21 = (max.y - r.origin.y) / r.direction.y;
-        double t22 = (min.z - r.origin.z) / r.direction.z;
-        double t23 = (max.z - r.origin.z) / r.direction.z;
+    static bool is_intersect(Vector3f min, Vector3f max,const Ray &r, double tmin,double *t = nullptr) {
+        double t11 = (min.x() - r.origin.x()) / r.direction.x();
+        double t12 = (max.x() - r.origin.x()) / r.direction.x();
+        double t13 = (min.y() - r.origin.y()) / r.direction.y();
+        double t21 = (max.y() - r.origin.y()) / r.direction.y();
+        double t22 = (min.z() - r.origin.z()) / r.direction.z();
+        double t23 = (max.z() - r.origin.z()) / r.direction.z();
         double t1 = std::min(t11, t12);
         t1 = std::min(t1, t13);
         double t2 = std::max(t21, t22);
