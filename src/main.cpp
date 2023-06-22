@@ -10,6 +10,7 @@
 #include "../include/triangle.hpp"
 #include "../include/mesh.hpp"
 #include "../include/revsurface.hpp"
+#include <iostream>
 
 #define SCALAR 5
 
@@ -33,8 +34,8 @@ Object3D *objs[] = {
         new Plane(Vec(0, 1, 0), 0, Vec(), Vec(.75, .75, .75), DIFF, &texture),        //Botm
         new Plane(Vec(0, -1, 0), -81.6, Vec(), Vec(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-        new Sphere(10,Vec(20,10,50),Vec(),Vec(.99,.99,.99),REFR),
-        new Mesh("mesh/bunny_200.obj",Vec(70,5,80),DIFF,Vec(0,0,0),Vec(.75,.75,.75))
+        new Sphere(10, Vec(20, 10, 50), Vec(), Vec(.99, .99, .99), REFR),
+        new Mesh("mesh/bunny_200.obj", Vec(70, 5, 80), DIFF, Vec(0, 0, 0), Vec(.75, .75, .75))
         // new RevSurface(&pCurve, 50, 50, DIFF, Vec(0, 0, 0), Vec(1, 1, 1) * .99),
 //        new Mesh("../mesh/bunny_200.obj", DIFF, Vec(1, 1, 1), Vec(0.75, 0.75, 0.75)),
 };
@@ -99,9 +100,14 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 1024, h = 768, samps = argc == 2 ? atoi(argv[1]) / 4 : 50;// # samples
+    int w = 1024, h = 768, samps = argc >= 2 ? atoi(argv[1]) / 4 : 50;// # samples
+
+    double flength = 3;
+    double aperture = 0.05;
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
+
+
 
     Vec cx = Vec(w * .5135 / h), cy = (cx % cam.direction).norm() * .5135, r, *c = new Vec[w * h];
 
@@ -113,11 +119,34 @@ int main(int argc, char *argv[]) {
                 for (int sx = 0;
                      sx < 2; sx++, r = Vec()) {                                           // 2x2 subpixel cols
                     for (int s = 0; s < samps; s++) {
-                        double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
-                        double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
-                        Vec d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
-                                cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
-                        r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
+
+                        if (flength == 0) {
+//                            double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
+//                            double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
+//                            Vec d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
+//                                    cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
+//                            r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
+                        } else {
+                            double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
+                            double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
+                            Vec d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
+                                    cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
+                            d = d.norm()*flength;
+                            Vec p;
+                            do {
+                                p = Vec(drand48(), drand48(), 0) * 2 - Vec(1, 1, 0);
+                            } while (Vec::dot(p, p) >= 1);
+                            d = d + p * aperture/2;
+                            Vec v1 = Vec::cross(d, cam.direction).norm() * aperture/2;
+                            Vec v2 = Vec::cross(d, v1).norm() * aperture/2;
+
+                            Vec sp = cam.origin + v1 + v2;
+                            Vec fp = d + cam.origin;
+                            d = (fp - sp);
+                            r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
+                        }
+
+
                     }// Camera rays are pushed ^^^^^ forward to start in interior
                     c[i] = c[i] + Vec(clamp(r.x), clamp(r.y), clamp(r.z)) * .25;
                 }
