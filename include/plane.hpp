@@ -30,7 +30,15 @@ public:
             hit.hit_pos = r.origin + r.direction * t;
             hit.hit_normal = normal;
             if(texture != nullptr){
-                hit.hit_color = texture->get_color(abs(hit.hit_pos.x), abs(hit.hit_pos.z));
+                if(normal.x == 0 && normal.z == 0) {
+                    texture->change_hit(abs(hit.hit_pos.x) / 100, abs(hit.hit_pos.z) / 170, hit);
+                }
+                else if(normal.x == 0 && normal.y == 0) {
+                    texture->change_hit(abs(hit.hit_pos.x) / 100, abs(hit.hit_pos.y) / 81.6, hit);
+                }
+                else if(normal.y == 0 && normal.z == 0) {
+                    texture->change_hit(abs(hit.hit_pos.y) / 81.6, abs(hit.hit_pos.z) / 170, hit);
+                }
             }
             else { hit.hit_color = color; }
             hit.refl = refl;
