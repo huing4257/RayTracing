@@ -11,13 +11,19 @@
 #include "../include/mesh.hpp"
 #include "../include/revsurface.hpp"
 
-BezierCurve pCurve(std::vector<Vec>{Vec(10, 0, 0),
-                                    Vec(2, 1, 0),
-                                    Vec(5, 10, 0),
-                                    Vec(10, 20, 0)});
+#define SCALAR 5
 
-Mapping texture = Mapping("texture/wood.jpg");
-NormalMapping normalTexture = NormalMapping("texture/Wall_n.png");
+BezierCurve pCurve(std::vector<Vec>{Vec(-0.9, 1.6, 0) * SCALAR,
+                                    Vec(-1, 1.5, 0) * SCALAR,
+                                    Vec(-1, 0.8, 0) * SCALAR,
+                                    Vec(-0.6, 0.4, 0) * SCALAR,
+                                    Vec(-0.4, 0.4, 0) * SCALAR,
+                                    Vec(-0.2, 0.15, 0) * SCALAR,
+                                    Vec(-0.75, 0, 0) * SCALAR,});
+
+
+Mapping texture = Mapping("../texture/wood.jpg");
+NormalMapping normalTexture = NormalMapping("../texture/Wall_n.png");
 
 Object3D *objs[] = {
         new Plane(Vec(1, 0, 0), 0, Vec(0, 0, 0), Vec(.75, .75, .75), DIFF, &normalTexture),  //Left
@@ -27,8 +33,10 @@ Object3D *objs[] = {
         new Plane(Vec(0, 1, 0), 0, Vec(), Vec(.75, .75, .75), DIFF, &texture),        //Botm
         new Plane(Vec(0, -1, 0), -81.6, Vec(), Vec(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-        new Sphere(10,Vec(40,10,70),Vec(),Vec(.99,.99,.99),REFR)
+        new Sphere(10,Vec(40,10,70),Vec(),Vec(.99,.99,.99),REFR),
         // new Mesh("mesh/bunny_200.obj",DIFF,Vec(0,0,0),Vec(.75,.75,.75))
+        new RevSurface(&pCurve, 100, 10, REFR, Vec(0, 0, 0), Vec(1, 1, 1) * .99),
+//        new Mesh("../mesh/bunny_200.obj", DIFF, Vec(1, 1, 1), Vec(0.75, 0.75, 0.75)),
 };
 
 inline double clamp(double x) {
