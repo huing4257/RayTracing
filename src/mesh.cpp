@@ -25,7 +25,7 @@ double Mesh::intersect(const Ray &r, double tmin, Hit &h) {
     return h.t;
 }
 
-Mesh::Mesh(const char *filename, Vec center,Refl_t refl_, Vec e_, Vec c_) : Object3D(refl_, e_, c_) {
+Mesh::Mesh(const char *filename, Vector3f center, Refl_t refl_, Vector3f e_, Vector3f c_) : Object3D(refl_, e_, c_) {
 
     // Optional: Use tiny obj loader to replace this simple one.
     std::ifstream f;
@@ -55,11 +55,11 @@ Mesh::Mesh(const char *filename, Vec center,Refl_t refl_, Vec e_, Vec c_) : Obje
         std::stringstream ss(line);
         ss >> tok;
         if (tok == vTok) {
-            Vec vec;
-            ss >> vec.x >> vec.y >> vec.z;
-            vec.x = vec.x * 100 + center.x;
-            vec.y = vec.y * 100 + center.y;
-            vec.z = vec.z * 100 + center.z;
+            Vector3f vec;
+            ss >> vec.x() >> vec.y() >> vec.z();
+            vec.x() = vec.x() * 100 + center.x();
+            vec.y() = vec.y() * 100 + center.y();
+            vec.z() = vec.z() * 100 + center.z();
             v.push_back(vec);
         } else if (tok == fTok) {
             if (line.find(bslash) != std::string::npos) {
@@ -86,11 +86,11 @@ Mesh::Mesh(const char *filename, Vec center,Refl_t refl_, Vec e_, Vec c_) : Obje
     f.close();
 
     // Bounding Box Intersection Acceleration
-    min = { 1e6, 1e6, 1e6 };
-    max = { 0, 0, 0 };
+    min = {1e6, 1e6, 1e6};
+    max = {0, 0, 0};
     for (const auto &i: v) {
-        min = Vec::min(min, i);
-        max = Vec::max(max, i);
+        min = {min.x() < i.x() ? min.x() : i.x(), min.y() < i.y() ? min.y() : i.y(), min.z() < i.z() ? min.z() : i.z()};
+        max = {max.x() > i.x() ? max.x() : i.x(), max.y() > i.y() ? max.y() : i.y(), max.z() > i.z() ? max.z() : i.z()};
     }
 }
 
@@ -98,10 +98,10 @@ void Mesh::computeNormal() {
     n.resize(t.size());
     for (int triId = 0; triId < (int) t.size(); ++triId) {
         TriangleIndex &triIndex = t[triId];
-        Vec a = v[triIndex[1]] - v[triIndex[0]];
-        Vec b = v[triIndex[2]] - v[triIndex[0]];
-        b = Vec::cross(a, b);
-        n[triId] = b / ::sqrt(b.dot(b));
+        Vector3f a = v[triIndex[1]] - v[triIndex[0]];
+        Vector3f b = v[triIndex[2]] - v[triIndex[0]];
+        b = Vector3f::cross(a, b);
+        n[triId] = b / ::sqrt(Vector3f::dot(b,b));
     }
 }
 

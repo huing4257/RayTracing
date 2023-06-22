@@ -2,7 +2,6 @@
 #define TRIANGLE_H
 
 #include "object3d.hpp"
-#include "vecmath.h"
 #include <cmath>
 #include <iostream>
 
@@ -15,8 +14,7 @@ public:
     Triangle() = delete;
 
     // a b c are three vertex positions of the triangle
-    Triangle(const Vector3f &a, const Vector3f &b, const Vector3f &c, Refl_t refl, Vector3f e_, Vector3f color)
-            : Object3D(refl, e_, color) {
+    Triangle(const Vector3f &a, const Vector3f &b, const Vector3f &c, Refl_t refl, Vector3f e_, Vector3f color) : Object3D(refl, e_, color) {
         vertices[0] = a;
         vertices[1] = b;
         vertices[2] = c;

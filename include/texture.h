@@ -5,7 +5,6 @@
 #ifndef RT_TEXTURE_H
 #define RT_TEXTURE_H
 
-#include "vecmath.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 

@@ -1,7 +1,6 @@
 #include <math.h>  // smallpt, a Path Tracer by Kevin Beason, 2008
 #include <stdio.h> //        Remove "-fopenmp" for g++ version < 4.2
 #include <stdlib.h>// Make : g++ -O3 -fopenmp smallpt.cpp -origin smallpt
-#include <vecmath.h>
 #include "../include/sphere.hpp"
 #include "../include/ray.hpp"
 #include "../include/object3d.hpp"
@@ -15,27 +14,27 @@
 #define SCALAR 5
 
 BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.6, 0) * SCALAR,
-                                    Vector3f(-1, 1.5, 0) * SCALAR,
-                                    Vector3f(-1, 0.8, 0) * SCALAR,
-                                    Vector3f(-0.6, 0.4, 0) * SCALAR,
-                                    Vector3f(-0.4, 0.4, 0) * SCALAR,
-                                    Vector3f(-0.2, 0.15, 0) * SCALAR,
-                                    Vector3f(-0.75, 0, 0) * SCALAR,});
+                                         Vector3f(-1, 1.5, 0) * SCALAR,
+                                         Vector3f(-1, 0.8, 0) * SCALAR,
+                                         Vector3f(-0.6, 0.4, 0) * SCALAR,
+                                         Vector3f(-0.4, 0.4, 0) * SCALAR,
+                                         Vector3f(-0.2, 0.15, 0) * SCALAR,
+                                         Vector3f(-0.75, 0, 0) * SCALAR,});
 
 
-Mapping texture = Mapping("texture/wood.jpg");
-NormalMapping normalTexture = NormalMapping("texture/Wall_n.png");
+Mapping texture = Mapping("../texture/wood.jpg");
+NormalMapping normalTexture = NormalMapping("../texture/Wall_n.png");
 
 Object3D *objs[] = {
         new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, &normalTexture),  //Left
         new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, &normalTexture),//Rght
-        new Plane(Vector3f(0, 0, 1), 0, Vector3f(), Vector3f(.75, .75, .75), DIFF),        //Back
-        new Plane(Vector3f(0, 0, -1), -170, Vector3f(), Vector3f(), DIFF, &normalTexture),              //Frnt
-        new Plane(Vector3f(0, 1, 0), 0, Vector3f(), Vector3f(.75, .75, .75), DIFF, &texture),        //Botm
-        new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(), Vector3f(.75, .75, .75), DIFF),//Top
+        new Plane(Vector3f(0, 0, 1), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),        //Back
+        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, &normalTexture),              //Frnt
+        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, &texture),        //Botm
+        new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF),   //Lite
-        new Sphere(10, Vector3f(20, 10, 50), Vector3f(), Vector3f(.99, .99, .99), REFR),
-        new Mesh("mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
+        new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
+//        new Mesh("mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
         // new RevSurface(&pCurve, 50, 50, DIFF, Vector3f(0, 0, 0), Vector3f(1, 1, 1) * .99),
 //        new Mesh("../mesh/bunny_200.obj", DIFF, Vector3f(1, 1, 1), Vector3f(0.75, 0.75, 0.75)),
 };
@@ -63,10 +62,10 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
     Hit hit;
     if (!intersect(r, t, id, hit)) return {};// if miss, return black
     const Object3D *obj = objs[id];       // the hit object
-    Vector3f n = hit.hit_normal, nl = n.dot(r.direction) < 0 ? n : n * -1;
+    Vector3f n = hit.hit_normal, nl = Vector3f::dot(r.direction, n) < 0 ? n : n * -1;
     Vector3f x = hit.hit_pos, f = hit.hit_color;
-    double p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y
-                                                        : f.z;// max refl
+    double p = f.x() > f.y() && f.x() > f.z() ? f.x() : f.y() > f.z() ? f.y()
+                                                                      : f.z();// max refl
     if (++depth > 5) {
         if (erand48(Xi) < p) f = f * (1 / p);
         else
@@ -76,40 +75,43 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
     if (obj->refl == DIFF) {
         // Ideal DIFFUSE reflection
         double r1 = 2 * M_PI * erand48(Xi), r2 = erand48(Xi), r2s = sqrt(r2);
-        Vector3f w = nl, u = ((fabs(w.x) > .1 ? Vector3f(0, 1) : Vector3f(1)) % w).norm(), v = w % u;
-        Vector3f d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm();
-        return obj->e + f.mult(radiance(Ray(x, d), depth, Xi));
+        Vector3f w = nl, u = Vector3f::cross((fabs(w.x()) > .1 ? Vector3f(0, 1, 0) : Vector3f(1, 0, 0)),
+                                             w).normalized(),
+                v = Vector3f::cross(w, u);
+        Vector3f d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).normalized();
+        return obj->e + f * radiance(Ray(x, d), depth, Xi);
 
     } else if (obj->refl == SPEC) {// Ideal SPECULAR reflection
-        return obj->e + f.mult(radiance(Ray(x, r.direction - n * 2 * n.dot(r.direction)), depth, Xi));
+        return obj->e + f * (radiance(Ray(x, r.direction - n * 2 * Vector3f::dot(n, r.direction)), depth, Xi));
     }
 
-    Ray reflRay(x, r.direction - n * 2 * n.dot(r.direction));// Ideal dielectric REFRACTION
-    bool into = n.dot(nl) > 0;               // Ray from outside going in?
-    double nc = 1, nt = 1.5, nnt = into ? nc / nt : nt / nc, ddn = r.direction.dot(nl), cos2t;
+    Ray reflRay(x, r.direction - n * 2 * Vector3f::dot(r.direction, n));// Ideal dielectric REFRACTION
+    bool into = Vector3f::dot(nl, n) > 0;               // Ray from outside going in?
+    double nc = 1, nt = 1.5, nnt = into ? nc / nt : nt / nc, ddn = Vector3f::dot(nl, r.direction), cos2t;
     if ((cos2t = 1 - nnt * nnt * (1 - ddn * ddn)) < 0)// Total internal reflection
-        return obj->e + f.mult(radiance(reflRay, depth, Xi));
-    Vector3f tdir = (r.direction * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))).norm();
-    double a = nt - nc, b = nt + nc, R0 = a * a / (b * b), c = 1 - (into ? -ddn : tdir.dot(n));
+        return obj->e + f * (radiance(reflRay, depth, Xi));
+    Vector3f tdir = (r.direction * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))).normalized();
+    double a = nt - nc, b = nt + nc, R0 = a * a / (b * b), c = 1 - (into ? -ddn : Vector3f::dot(n,tdir));
     double Re = R0 + (1 - R0) * c * c * c * c * c, Tr = 1 - Re, P = .25 + .5 * Re, RP = Re / P, TP = Tr / (1 - P);
-    return obj->e + f.mult(depth > 2 ? (erand48(Xi) < P ?// Russian roulette
-                                        radiance(reflRay, depth, Xi) * RP
-                                                        : radiance(Ray(x, tdir), depth, Xi) * TP)
-                                     : radiance(reflRay, depth, Xi) * Re + radiance(Ray(x, tdir), depth, Xi) * Tr);
+    return obj->e + f * (depth > 2 ? (erand48(Xi) < P ?// Russian roulette
+                                      radiance(reflRay, depth, Xi) * RP
+                                                      : radiance(Ray(x, tdir), depth, Xi) * TP)
+                                   : radiance(reflRay, depth, Xi) * Re + radiance(Ray(x, tdir), depth, Xi) * Tr);
 
 }
 
 int main(int argc, char *argv[]) {
-    int w = 1024, h = 768, samps = argc >= 2 ? atoi(argv[1]) / 4 : 50;// # samples
+    int w = 1024, h = 768, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
 
-    double flength = 3;
+    double flength = 0;
     double aperture = 0.05;
 
-    Ray cam(Vector3f(50, 52, 295.6), Vector3f(0, -0.042612, -1).norm());      // cam pos, dir
+    Ray cam(Vector3f(50, 52, 295.6), Vector3f(0, -0.042612, -1).normalized());      // cam pos, dir
 
 
 
-    Vector3f cx = Vector3f(w * .5135 / h), cy = (cx % cam.direction).norm() * .5135, r, *c = new Vector3f[w * h];
+    Vector3f cx = Vector3f(w * .5135 / h,0,0), cy =
+            Vector3f::cross(cx, cam.direction).normalized() * .5135, r, *c = new Vector3f[w * h];
 
 #pragma omp parallel for schedule(dynamic, 1) private(r)// OpenMP
     for (int y = 0; y < h; y++) {                       // Loop over image rows
@@ -124,33 +126,33 @@ int main(int argc, char *argv[]) {
                             double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
                             double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
                             Vector3f d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
-                                    cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
-                            r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
+                                         cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
+                            r = r + radiance(Ray(cam.origin + d * 140, d.normalized()), 0, Xi) * (1. / samps);
                         } else {
                             double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
                             double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
                             Vector3f d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
-                                    cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
-                            d = d.norm()*flength;
+                                         cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
+                            d = d.normalized() * flength;
 
                             Vector3f p;
                             do {
                                 p = Vector3f(drand48(), drand48(), 0) * 2 - Vector3f(1, 1, 0);
                             } while (Vector3f::dot(p, p) >= 1);
 
-                            Vector3f origin = cam.origin + p * aperture/2;
-                            Vector3f direction = d - p * aperture/2;
-                            r = r + radiance(Ray(origin, direction.norm()), 0, Xi) * (1. / samps);
+                            Vector3f origin = cam.origin + p * aperture / 2;
+                            Vector3f direction = d - p * aperture / 2;
+                            r = r + radiance(Ray(origin, direction.normalized()), 0, Xi) * (1. / samps);
                         }
 
 
                     }// Camera rays are pushed ^^^^^ forward to start in interior
-                    c[i] = c[i] + Vector3f(clamp(r.x), clamp(r.y), clamp(r.z)) * .25;
+                    c[i] = c[i] + Vector3f(clamp(r.x()), clamp(r.y()), clamp(r.z())) * .25;
                 }
     }
     FILE *f = fopen("news.ppm", "w");// Write image to PPM file.
     fprintf(f, "P3\n%d %d\n%d\n", w, h, 255);
     for (int i = 0; i < w * h; i++)
-        fprintf(f, "%d %d %d ", toInt(c[i].x), toInt(c[i].y), toInt(c[i].z));
+        fprintf(f, "%d %d %d ", toInt(c[i].x()), toInt(c[i].y()), toInt(c[i].z()));
     system("python convert.py");
 }

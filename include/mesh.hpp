@@ -4,13 +4,12 @@
 #include <vector>
 #include "object3d.hpp"
 #include "triangle.hpp"
-#include <vecmath.h>
 
 
 class Mesh : public Object3D {
 
 public:
-    Mesh(const char *filename,Vector3f center, Refl_t refl_, Vector3f e_, Vector3f c_);
+    Mesh(const char *filename, Vector3f center, Refl_t refl_, Vector3f e_, Vector3f c_);
 
     struct TriangleIndex {
         TriangleIndex() {

@@ -1,116 +1,62 @@
 #ifndef CURVE_HPP
 #define CURVE_HPP
 
+#include "object3d.hpp"
 #include <vecmath.h>
+#include <vector>
+#include <utility>
 
 #include <algorithm>
-#include <iostream>
-#include <utility>
-#include <vector>
-#include "object3d.hpp"
-using namespace std;
 
+// TODO (PA2): Implement Bernstein class to compute spline basis function.
+//       You may refer to the python-script for implementation.
+
+// The CurvePoint object stores information about a point on a curve
+// after it has been tesselated: the vertex (V) and the tangent (T)
+// It is the responsiblility of functions that create these objects to fill in all the data.
 struct CurvePoint {
-    Vector3f V;  // Vertex
-    Vector3f T;  // Tangent  (unit)
+    Vector3f V; // Vertex
+    Vector3f T; // Tangent  (not normalized)
+    double t;
 };
 
-class Curve {
+Vector3f now_xy;
+
+bool dist(const CurvePoint& a, const CurvePoint& b) {
+    return (a.V - now_xy).squaredLength() < (b.V - now_xy).squaredLength();
+}
+
+
+class Curve : public Object3D {
 protected:
     std::vector<Vector3f> controls;
-
+    std::vector<CurvePoint> data;
 public:
-    explicit Curve(std::vector<Vector3f> points) : controls(std::move(points)) {
-        ymin = 1e6;
-        ymax = -1e6;
-        radius = 0;
-        for (auto pt : controls) {
-            ymin = min(pt.y(), ymin);
-            ymax = max(pt.y(), ymax);
-            radius = max(radius, fabs(pt.x()));
-            radius = max(radius, fabs(pt.z()));
-        }
+    explicit Curve(std::vector<Vector3f> points) : controls(std::move(points)) {}
+
+    double intersect(const Ray &r, double tmin, Hit &h) override {
+        return false;
     }
 
-    std::vector<Vector3f> &getControls() { return controls; }
+    virtual double estimate(double y) = 0;
 
-    CurvePoint getPoint(float mu) {
-        CurvePoint pt;
-        int bpos = upper_bound(t.begin(), t.end(), mu) - t.begin() - 1;
-        vector<float > s(k + 2, 0), ds(k + 1, 1);
-        s[k] = 1;
-        for (int p = 1; p <= k; ++p) {
-            for (int ii = k - p; ii < k + 1; ++ii) {
-                int i = ii + bpos - k;
-                float w1, dw1, w2, dw2;
-                if (tpad[i + p] == tpad[i]) {
-                    w1 = mu;
-                    dw1 = 1;
-                } else {
-                    w1 = (mu - tpad[i]) / (tpad[i + p] - tpad[i]);
-                    dw1 = 1.0 / (tpad[i + p] - tpad[i]);
-                }
-                if (tpad[i + p + 1] == tpad[i + 1]) {
-                    w2 = 1 - mu;
-                    dw2 = -1;
-                } else {
-                    w2 = (tpad[i + p + 1] - mu) /
-                         (tpad[i + p + 1] - tpad[i + 1]);
-                    dw2 = -1 / (tpad[i + p + 1] - tpad[i + 1]);
-                }
-                if (p == k) ds[ii] = (dw1 * s[ii] + dw2 * s[ii + 1]) * p;
-                s[ii] = w1 * s[ii] + w2 * s[ii + 1];
-            }
-        }
-        s.pop_back();
-        int lsk = k - bpos, rsk = bpos + 1 - n;
-        if (lsk > 0) {
-            for (int i = lsk; i < s.size(); ++i) {
-                s[i - lsk] = s[i];
-                ds[i - lsk] = ds[i];
-            }
-            s.resize(s.size() - lsk);
-            ds.resize(ds.size() - lsk);
-            lsk = 0;
-        }
-        if (rsk > 0) {
-            if (rsk < s.size()) {
-                s.resize(s.size() - rsk);
-                ds.resize(ds.size() - rsk);
-            } else {
-                s.clear();
-                ds.clear();
-            }
-        }
-        for (int j = 0; j < s.size(); ++j) {
-            pt.V += controls[-lsk + j] * s[j];
-            pt.T += controls[-lsk + j] * ds[j];
-        }
-        return pt;
+    std::vector<Vector3f> &getControls() {
+        return controls;
     }
 
-    void discretize(int resolution, std::vector<CurvePoint> &data) {
-        resolution *= n / k;
-        data.resize(resolution);
-        for (int i = 0; i < resolution; ++i) {
-            float mu =
-                    ((float )i / resolution) * (range[1] - range[0]) + range[0];
-            data[i] = getPoint(mu);
-        }
+    bool is_on_curve(const Vector3f& vv) {
+        now_xy = Vector3f(-sqrt(vv.x() * vv.x() + vv.z() * vv.z()), vv.y(), 0.0);
+        auto it  = min_element(data.begin(), data.end(), dist);
+        if(((*it).V - now_xy).length() > 1e-2)
+            return false;
+        return true;
     }
 
-    void pad() {
-        int tSize = t.size();
-        tpad.resize(tSize + k);
-        for (int i = 0; i < tSize; ++i) tpad[i] = t[i];
-        for (int i = 0; i < k; ++i) tpad[i + tSize] = t.back();
-    }
+    virtual CurvePoint get_pos(double t) = 0;
 
-    int n, k;
-    std::vector<float > t;
-    std::vector<float > tpad;
-    float ymin, ymax, radius;
-    float range[2];
+    virtual double F(Vector3f &o, Vector3f &d, double t) = 0;
+
+    virtual double dF(Vector3f &o, Vector3f &d, double t) = 0;
 };
 
 class BezierCurve : public Curve {
@@ -120,36 +66,68 @@ public:
             printf("Number of control points of BezierCurve must be 3n+1!\n");
             exit(0);
         }
-        n = controls.size();
-        k = n - 1;
-        range[0] = 0;
-        range[1] = 1;
-        t.resize(2 * n);
-        for (int i = 0; i < n; ++i) {
-            t[i] = 0;
-            t[i + n] = 1;
+        for (int i = 0; i < 100; ++i) {
+            float t = (float) i / (float) 100;
+            size_t n = controls.size();
+            auto *mid_points = new CurvePoint[n];
+            for (int j = 0; j < n; ++j) {
+                mid_points[j].V = controls[j];
+            }
+            for (size_t k = n - 1; k > 0; k--) {
+                if (k == 1) {
+                    mid_points[0].T = mid_points[1].V - mid_points[0].V;
+                }
+                for (int j = 0; j < k; ++j) {
+                    mid_points[j].V = mid_points[j].V * t + mid_points[j + 1].V * (1 - t);
+                }
+            }
+            mid_points[0].t = t;
+            data.push_back(mid_points[0]);
+            delete[] mid_points;
         }
-        pad();
     }
+
+    double F(Vector3f &o, Vector3f &d, double t) override {
+        CurvePoint cp = get_pos(t);
+        double t_ = (cp.V.y() - o.y()) / d.y();
+        return t_ * t_ * (d.x() * d.x() + d.z() * d.z()) + o.x() * o.x() + o.z() * o.z() + 2 * (o.x() + o.z()) * t_ - cp.V.x() * cp.V.x();
+    }
+
+    double dF(Vector3f &o, Vector3f &d, double t) override {
+        CurvePoint cp = get_pos(t);
+        double t_ = (cp.V.y() - o.y()) / d.y();
+        return 2 * t_ * (d.x() * d.x() + d.z() * d.z())/d.y()*cp.T.y() + 2 * (o.x() + o.z())/d.y()*cp.T.y() - 2 * cp.V.x() * cp.T.x();
+    }
+
+
+
+    double estimate(double y) override {
+        return min_element(data.begin(), data.end(), [y](const CurvePoint &a, const CurvePoint &b) {
+            return abs(a.t - y) < abs(b.t - y);
+        })->t;
+    }
+
+    CurvePoint get_pos(double t) override {
+        size_t n = controls.size();
+        auto *mid_points = new CurvePoint[n];
+        for (int j = 0; j < n; ++j) {
+            mid_points[j].V = controls[j];
+        }
+        for (size_t k = n - 1; k > 0; k--) {
+            if (k == 1) {
+                mid_points[0].T = mid_points[1].V - mid_points[0].V;
+            }
+            for (int j = 0; j < k; ++j) {
+                mid_points[j].V = mid_points[j].V * t + mid_points[j + 1].V * (1 - t);
+            }
+        }
+        CurvePoint res = mid_points[0];
+        delete[] mid_points;
+        return res;
+    }
+
+protected:
+
 };
 
-class BsplineCurve : public Curve {
-public:
-    BsplineCurve(const std::vector<Vector3f> &points) : Curve(points) {
-        if (points.size() < 4) {
-            printf(
-                    "Number of control points of BspineCurve must be more than "
-                    "4!\n");
-            exit(0);
-        }
-        n = controls.size();
-        k = 3;
-        t.resize(n + k + 1);
-        for (int i = 0; i < n + k + 1; ++i) t[i] = (float )i / (n + k);
-        pad();
-        range[0] = t[k];
-        range[1] = t[n];
-    }
-};
-
-#endif  // CURVE_HPP
+#endif // CURVE_HPP
