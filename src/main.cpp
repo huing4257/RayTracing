@@ -35,7 +35,7 @@ Object3D *objs[] = {
         new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF),   //Lite
         new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
 //        new Mesh("mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
-        // new RevSurface(&pCurve, 50, 50, DIFF, Vector3f(0, 0, 0), Vector3f(1, 1, 1) * .99),
+         new RevSurface(&pCurve, 50, 50, DIFF, Vector3f(0, 0, 0), Vector3f(1, 1, 1) * .99)
 //        new Mesh("../mesh/bunny_200.obj", DIFF, Vector3f(1, 1, 1), Vector3f(0.75, 0.75, 0.75)),
 };
 
