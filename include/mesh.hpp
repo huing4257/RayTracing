@@ -10,7 +10,7 @@
 class Mesh : public Object3D {
 
 public:
-    Mesh(const char *filename, Refl_t refl_, Vec e_, Vec c_);
+    Mesh(const char *filename,Vec center, Refl_t refl_, Vec e_, Vec c_);
 
     struct TriangleIndex {
         TriangleIndex() {

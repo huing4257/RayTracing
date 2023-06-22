@@ -25,7 +25,7 @@ double Mesh::intersect(const Ray &r, double tmin, Hit &h) {
     return h.t;
 }
 
-Mesh::Mesh(const char *filename, Refl_t refl_, Vec e_, Vec c_) : Object3D(refl_, e_, c_) {
+Mesh::Mesh(const char *filename, Vec center,Refl_t refl_, Vec e_, Vec c_) : Object3D(refl_, e_, c_) {
 
     // Optional: Use tiny obj loader to replace this simple one.
     std::ifstream f;
@@ -57,9 +57,9 @@ Mesh::Mesh(const char *filename, Refl_t refl_, Vec e_, Vec c_) : Object3D(refl_,
         if (tok == vTok) {
             Vec vec;
             ss >> vec.x >> vec.y >> vec.z;
-            vec.x = vec.x * 100 + 50;
-            vec.y = vec.y * 100 + 40.8;
-            vec.z = vec.z * 100 + 81.6;
+            vec.x = vec.x * 100 + center.x;
+            vec.y = vec.y * 100 + center.y;
+            vec.z = vec.z * 100 + center.z;
             v.push_back(vec);
         } else if (tok == fTok) {
             if (line.find(bslash) != std::string::npos) {
