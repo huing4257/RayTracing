@@ -29,6 +29,7 @@ public:
             hit.t = t;
             hit.hit_pos = r.origin + r.direction * t;
             hit.hit_normal = normal;
+            hit.hit_color = color; 
             if(texture != nullptr){
                 if(normal.x == 0 && normal.z == 0) {
                     texture->change_hit(abs(hit.hit_pos.x) / 100, abs(hit.hit_pos.z) / 170, hit);
@@ -37,10 +38,9 @@ public:
                     texture->change_hit(abs(hit.hit_pos.x) / 100, abs(hit.hit_pos.y) / 81.6, hit);
                 }
                 else if(normal.y == 0 && normal.z == 0) {
-                    texture->change_hit(abs(hit.hit_pos.y) / 81.6, abs(hit.hit_pos.z) / 170, hit);
+                    texture->change_hit(abs(hit.hit_pos.z) / 170,abs(hit.hit_pos.y) / 81.6, hit);
                 }
             }
-            else { hit.hit_color = color; }
             hit.refl = refl;
             return t;
         }

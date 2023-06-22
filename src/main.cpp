@@ -16,18 +16,19 @@ BezierCurve pCurve(std::vector<Vec>{Vec(10, 0, 0),
                                     Vec(5, 10, 0),
                                     Vec(10, 20, 0)});
 
-Mapping texture = Mapping("../texture/wood.jpg");
-NormalMapping normalTexture = NormalMapping("../texture/Wall_n.png");
+Mapping texture = Mapping("texture/wood.jpg");
+NormalMapping normalTexture = NormalMapping("texture/Wall_n.png");
 
 Object3D *objs[] = {
-        new Plane(Vec(1, 0, 0), 0, Vec(0, 0, 0), Vec(.75, .25, .25), DIFF, &normalTexture),  //Left
-        new Plane(Vec(1, 0, 0), 100, Vec(0, 0, 0), Vec(.5, .5, .5), DIFF, &normalTexture),//Rght
+        new Plane(Vec(1, 0, 0), 0, Vec(0, 0, 0), Vec(.75, .75, .75), DIFF, &normalTexture),  //Left
+        new Plane(Vec(-1, 0, 0), -100, Vec(0, 0, 0), Vec(.75, .75, .75), DIFF, &normalTexture),//Rght
         new Plane(Vec(0, 0, 1), 0, Vec(), Vec(.75, .75, .75), DIFF),        //Back
-        new Plane(Vec(0, 0, 1), 170, Vec(), Vec(), DIFF),              //Frnt
+        new Plane(Vec(0, 0, -1), -170, Vec(), Vec(), DIFF, &normalTexture),              //Frnt
         new Plane(Vec(0, 1, 0), 0, Vec(), Vec(.75, .75, .75), DIFF, &texture),        //Botm
-        new Plane(Vec(0, 1, 0), 81.6, Vec(), Vec(.75, .75, .75), DIFF),//Top
+        new Plane(Vec(0, -1, 0), -81.6, Vec(), Vec(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
-        new RevSurface(&pCurve, 10, 10, REFR, Vec(0, 0, 0), Vec(1, 1, 1) * .99),
+        new Sphere(10,Vec(40,10,70),Vec(),Vec(.99,.99,.99),REFR)
+        // new Mesh("mesh/bunny_200.obj",DIFF,Vec(0,0,0),Vec(.75,.75,.75))
 };
 
 inline double clamp(double x) {
@@ -90,7 +91,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 256, h = 192, samps = argc == 2 ? atoi(argv[1]) / 4 : 50;// # samples
+    int w = 1024, h = 768, samps = argc == 2 ? atoi(argv[1]) / 4 : 50;// # samples
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
 
