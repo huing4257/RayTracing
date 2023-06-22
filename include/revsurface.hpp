@@ -13,19 +13,19 @@ class RevSurface : public Object3D {
 public:
     RevSurface(Curve *pCurve, double x, double z, Refl_t refl_, Vec e_, Vec c_) : pCurve(pCurve), x(x), z(z),
                                                                                   Object3D(refl_, e_, c_) {
-        double max_x = 1e-6, max_y = 1e-6;
+        double max_x = 1e-6, max_y = 1e-6,min_y = 1e6;
         // Check flat.
         for (const auto &cp: pCurve->getControls()) {
             max_x = std::max(max_x, cp.x);
             max_y = std::max(max_y, cp.y);
+            min_y = std::min(min_y, cp.y);
             if (cp.z != 0.0) {
                 printf("Profile of revSurface must be flat on xy plane.\n");
                 exit(0);
             }
         }
-        vmin = Vec(x - max_x, max_y, z - max_x);
+        vmin = Vec(x - max_x, min_y, z - max_x);
         vmax = Vec(x + max_x, max_y, z + max_x);
-
     }
 
     ~RevSurface() override {
@@ -53,7 +53,7 @@ public:
     }
 
     double solve_t(const Ray &r, double tmin, Hit &h) {
-        double t = 0.5, ft, dft;
+        double t = 0.5, ft = 1 , dft;
 
         double ox = r.origin.x - x;
         double oz = r.origin.z - z;

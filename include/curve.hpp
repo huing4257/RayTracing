@@ -56,7 +56,7 @@ public:
             if (k == 1) {
                 mid_points[0].T = mid_points[1].V - mid_points[0].V;
             }
-            for (int j = 0; j < n; ++j) {
+            for (int j = 0; j < k; ++j) {
                 mid_points[j].V = mid_points[j].V * t + mid_points[j + 1].V * (1 - t);
             }
         }
