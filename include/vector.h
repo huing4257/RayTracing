@@ -39,8 +39,13 @@ struct Vec {        // Usage: time ./smallpt4k && xv image.ppm
         return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
     }
 
+    double squared_length(){
+        return x*x+y*y+z*z;
+    }
 
-
+    double length(){
+        return sqrt(x*x+y*y+z*z);
+    }
     static Vec min(const Vec &a, const Vec &b) {
         return {a.x>b.x?b.x:a.x, a.y>b.y?b.y:a.y, a.z>b.z?b.z:a.z};
     }

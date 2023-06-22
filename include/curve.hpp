@@ -20,6 +20,13 @@ struct CurvePoint {
     double t;
 };
 
+Vec now_xy;
+
+bool dist(const CurvePoint& a, const CurvePoint& b) {
+    return (a.V - now_xy).squared_length() < (b.V - now_xy).squared_length();
+}
+
+
 class Curve : public Object3D {
 protected:
     std::vector<Vec> controls;
@@ -35,6 +42,14 @@ public:
 
     std::vector<Vec> &getControls() {
         return controls;
+    }
+
+    bool is_on_curve(const Vec& vv) {
+        now_xy = Vec(-sqrt(vv.x * vv.x + vv.z * vv.z), vv.y, 0.0);
+        auto it  = min_element(data.begin(), data.end(), dist);
+        if(((*it).V - now_xy).length() > 1e-2)
+            return false;
+        return true;
     }
 
     virtual CurvePoint get_pos(double t) = 0;
