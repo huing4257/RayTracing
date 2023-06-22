@@ -14,7 +14,7 @@ public:
     RevSurface(Curve *pCurve, double x, double z, Refl_t refl_, Vec e_, Vec c_) : pCurve(pCurve), x(x), z(z),
                                                                                   Object3D(refl_, e_, c_) {
         // x always less than 0.
-        double min_x = 0, max_y = 1e-6,min_y = 1e6;
+        double min_x = 0, max_y = 1e-6, min_y = 1e6;
         for (const auto &cp: pCurve->getControls()) {
             min_x = std::min(min_x, cp.x);
             max_y = std::max(max_y, cp.y);
@@ -33,49 +33,34 @@ public:
     }
 
     double intersect(const Ray &r, double tmin, Hit &h) override {
-        if (!Box::is_intersect(vmin, vmax, r, tmin)) return 0;
-        double t = solve_t(r, tmin, h);
-        if (t <= 0 || t >= 1) return 0;
-        CurvePoint pos = pCurve->get_pos(t);
-        double tr = (pos.V.y - r.origin.y) / abs(r.direction.y);
-        if (tr > tmin && tr < h.t) {
-            Vec hit_pos = r.origin + r.direction * tr;
-            Vec rad = Vec(hit_pos.x - x, 0, hit_pos.z - z).norm();
-            Vec new_T = Vec(pos.T.x * rad.x, pos.T.y, pos.T.x * rad.z).norm();
-            Vec normal = (new_T % rad) % (new_T).norm();
-            h.t = tr;
-            h.hit_pos = hit_pos;
-            h.hit_normal = normal;
-            h.hit_color = color;
-            h.refl = refl;
+        double tr;
+        if (!Box::is_intersect(vmin, vmax, r, tmin, &tr)) return 0;
+        // newton's method
+        Vec p = r.origin + r.direction * tr;
+        double estimate_t = pCurve->estimate(p.y);
+        Vec o = r.origin - Vec(x, 0, z);
+        Vec d = r.direction;
+        for (int i = 0; i < 10; i++) {
+            double f = pCurve->F(o, d, estimate_t);
+            double df = pCurve->dF(o, d, estimate_t);
+            estimate_t = estimate_t - f / df;
+            if (estimate_t < tmin || estimate_t > 1) {
+                return 0;
+            }
+            if (fabs(f) < 1e-6) {
+                CurvePoint cp = pCurve->get_pos(estimate_t);
+                h.t = (cp.V.y - o.y) / d.y;
+                Vec hit_point = o + d * h.t;
+                double dis = sqrt(hit_point.x * hit_point.x + hit_point.y * hit_point.y);
+                Vec rad = {cp.T.x * hit_point.x / dis, 0, cp.T.x * hit_point.z / dis};
+                Vec norm = cp.T % rad % cp.T;
+                h.hit_color = color;
+                h.refl = refl;
+                h.hit_normal = norm;
+                return h.t;
+            }
         }
         return 0;
-    }
-
-    double solve_t(const Ray &r, double tmin, Hit &h) {
-        double t = 0.5, ft = 1 , dft;
-
-        double ox = r.origin.x - x;
-        double oz = r.origin.z - z;
-        double oy = r.origin.y;
-        double dx = r.direction.x;
-        double dz = r.direction.z;
-        double dy = r.direction.y;
-
-        for (int i = 10; i--;) {
-            if (t < 0) t = 0;
-            else if (t > 1) t = 1;
-            if (ft < 1e-5) return t;
-            CurvePoint pos = pCurve->get_pos(t);
-            double ty = (pos.V.y - oy) / dy;
-            double xt = pos.V.x;
-            double dxt = pos.T.x;
-            double dyt = pos.T.y;
-            ft = ty * ty * (dx * dx + dz * dz) + 2 * ty * (ox + oz) + ox * ox + oz * oz - xt * xt;
-            dft = 2 * ty * (dx * dx + dz * dz) * dyt / dy + 2 * (ox + oz) * dyt / dy - 2 * xt * dxt;
-            t -= ft / dft;
-        }
-        return -1;
     }
 
     double x, z; // rotation axis

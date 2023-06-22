@@ -35,7 +35,7 @@ Object3D *objs[] = {
         new Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),   //Lite
         new Sphere(10,Vec(40,10,70),Vec(),Vec(.99,.99,.99),REFR),
         // new Mesh("mesh/bunny_200.obj",DIFF,Vec(0,0,0),Vec(.75,.75,.75))
-        new RevSurface(&pCurve, 100, 10, REFR, Vec(0, 0, 0), Vec(1, 1, 1) * .99),
+        new RevSurface(&pCurve, 50, 50, REFR, Vec(0, 0, 0), Vec(1, 1, 1) * .99),
 //        new Mesh("../mesh/bunny_200.obj", DIFF, Vec(1, 1, 1), Vec(0.75, 0.75, 0.75)),
 };
 
@@ -99,7 +99,7 @@ Vec radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 1024, h = 768, samps = argc == 2 ? atoi(argv[1]) / 4 : 50;// # samples
+    int w = 128, h = 96, samps = argc == 2 ? atoi(argv[1]) / 4 : 50;// # samples
 
     Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());      // cam pos, dir
 

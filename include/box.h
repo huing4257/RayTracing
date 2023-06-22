@@ -9,7 +9,7 @@
 
 class Box{
 public:
-    static bool is_intersect(Vec min, Vec max,const Ray &r, double tmin) {
+    static bool is_intersect(Vec min, Vec max,const Ray &r, double tmin,double *t = nullptr) {
         double t11 = (min.x - r.origin.x) / r.direction.x;
         double t12 = (max.x - r.origin.x) / r.direction.x;
         double t13 = (min.y - r.origin.y) / r.direction.y;
@@ -20,6 +20,7 @@ public:
         t1 = std::min(t1, t13);
         double t2 = std::max(t21, t22);
         t2 = std::max(t2, t23);
+        if (t) *t = t1;
         if(t1 >= t2 || t2 < tmin) return false;
         return true;
     }
