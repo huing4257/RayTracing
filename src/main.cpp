@@ -121,29 +121,26 @@ int main(int argc, char *argv[]) {
                     for (int s = 0; s < samps; s++) {
 
                         if (flength == 0) {
-//                            double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
-//                            double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
-//                            Vec d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
-//                                    cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
-//                            r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
+                            double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
+                            double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
+                            Vec d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
+                                    cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
+                            r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
                         } else {
                             double r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
                             double r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
                             Vec d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) +
                                     cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.direction;
                             d = d.norm()*flength;
+
                             Vec p;
                             do {
                                 p = Vec(drand48(), drand48(), 0) * 2 - Vec(1, 1, 0);
                             } while (Vec::dot(p, p) >= 1);
-                            d = d + p * aperture/2;
-                            Vec v1 = Vec::cross(d, cam.direction).norm() * aperture/2;
-                            Vec v2 = Vec::cross(d, v1).norm() * aperture/2;
 
-                            Vec sp = cam.origin + v1 + v2;
-                            Vec fp = d + cam.origin;
-                            d = (fp - sp);
-                            r = r + radiance(Ray(cam.origin + d * 140, d.norm()), 0, Xi) * (1. / samps);
+                            Vec origin = cam.origin + p * aperture/2;
+                            Vec direction = d - p * aperture/2;
+                            r = r + radiance(Ray(origin, direction.norm()), 0, Xi) * (1. / samps);
                         }
 
 
