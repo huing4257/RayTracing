@@ -70,31 +70,18 @@ public:
             // printf("estimate: %f\n", estimate_t);
 
             if (abs(ft) < 1e-5) {
-                double tr;
                 if (abs(r.direction.y) > 1e-3) {
                     tr = (now_point.y - r.origin.y) / (r.direction.y);
-                    // if(tr < 0) {
-
-                    // }
                 } else {
 
                     double a = r.direction.z * r.direction.z + r.direction.x + r.direction.x;
                     double b = 2 * (r.direction.z * r.origin.z + r.direction.x * r.origin.x);
                     double c = pow(r.origin.x, 2) + pow(r.origin.z, 2) - pow(now_point.x, 2);
                     tr = (sqrt(pow(b, 2) - 4 * a * c) - b) / (2 * a);
-                    // std::cout << tr << " " << a  << " "<< b << " " << c << std::endl;
-                    // now_point.print();
-                    // r.origin.print();
-                    // r.direction.print();
                 }
                 Vec next_origin = r.direction * tr + r.origin;
 
                 if (tr > tmin && pCurve->is_on_curve(next_origin)) {
-                    //  std::cout << AABB_x << " " << AABB_y << std::endl;
-                    //     now_point.print();
-                    //     r.origin.print();
-                    //     r.direction.print();
-
 
                     Vec plane_normal(now_grad.y, -now_grad.x, 0);
                     plane_normal.norm();
@@ -104,22 +91,17 @@ public:
                         h.hit_normal = now_point.y > 0 ? Vec(0, 1, 0) : Vec(0, -1, 0);
                         h.refl = refl;
                         h.hit_color = color;
-                        h.hit_pos = next_origin;
+                        h.hit_pos = r.origin + r.direction * tr;
                         return tr;
                     }
                     double costheta = (r.direction.x * tr + r.origin.x) / now_point.x;
                     double sintheta = (r.direction.z * tr + r.origin.z) / now_point.x;
                     Vec new_normal = Vec(costheta * plane_normal.x, plane_normal.y, sintheta * plane_normal.x);
-                    // if(Vec::dot(new_normal, next_origin) < 0)
-                    //     new_normal.negate();
-                    // std::cout << "nextori";
-                    // next_origin.print();
-                    // std::cout << "normal";
-                    // new_normal.print();
                     h.t = tr;
                     h.refl = refl;
                     h.hit_color = color;
-                    return true;
+                    h.hit_pos = r.origin + r.direction * tr;
+                    return tr;
                 }
             }
             double step = ft / ft_grad;
