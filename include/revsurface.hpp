@@ -51,11 +51,7 @@ public:
         if (!Box::is_intersect(vmin, vmax, r, 1e-5) || t > hit.t) return false;
         getUV(r, t, theta, mu);
         Vector3f normal, point;
-        // cout << "begin!" << endl;
         if (!newton(r, t, theta, mu, normal, point)) {
-            // cout << "Not Intersect! t:" << t << " theta: " << theta / (2 *
-            // M_PI)
-            //      << " mu: " << mu << endl;
             return false;
         }
         if (!isnormal(mu) || !isnormal(theta) || !isnormal(t)) return false;
@@ -63,8 +59,6 @@ public:
             t > hit.t)
             return false;
         hit = {t, point, normal.normalized(), color, refl};
-        // cout << "Intersect! t:" << t << " theta: " << theta / (2 * M_PI)
-        //      << " mu: " << mu << endl;
         return true;
     }
 
@@ -79,9 +73,6 @@ public:
             point = getPoint(theta, mu, dtheta, dmu);
             Vector3f f = r.origin + r.direction * t - point;
             float dist2 = f.squaredLength();
-            // cout << "Iter " << i + 1 << " t: " << t
-            //      << " theta: " << theta / (2 * M_PI) << " mu: " << mu
-            //      << " dist2: " << dist2 << endl;
             normal = Vector3f::cross(dmu, dtheta);
             if (dist2 < NEWTON_EPS) return true;
             float D = Vector3f::dot(r.direction, normal);
