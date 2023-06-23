@@ -29,8 +29,8 @@ public:
                 exit(0);
             }
         }
-        vmin = Vector3f(x + min_x, min_y, z + min_x);
-        vmax = Vector3f(x - min_x, max_y, z - min_x);
+        vmin = Vector3f(  min_x, min_y, min_x);
+        vmax = Vector3f( - min_x, max_y,- min_x);
     }
 
     ~RevSurface() override {
@@ -39,13 +39,16 @@ public:
 
     double intersect(const Ray &r, double tmin, Hit &hit) override {
         // return meshIntersect(r, hit, tmin);
-        if (!newtonIntersect(r, hit)) return 0;
+        Ray new_ray = r;
+        new_ray.origin -= Vector3f(x,0,z);
+        if (!newtonIntersect(new_ray, hit)) return 0;
+        hit.hit_pos = r.origin + hit.t*r.direction;
         return hit.t;
     }
 
     bool newtonIntersect(const Ray &r, Hit &hit) {
         float t, theta, mu;
-        if (Box::is_intersect(vmin, vmax, r, 1e-5) || t > hit.t) return false;
+        if (!Box::is_intersect(vmin, vmax, r, 1e-5) || t > hit.t) return false;
         getUV(r, t, theta, mu);
         Vector3f normal, point;
         // cout << "begin!" << endl;

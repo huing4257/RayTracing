@@ -1,17 +1,17 @@
-#include <math.h>  // smallpt, a Path Tracer by Kevin Beason, 2008
-#include <stdio.h> //        Remove "-fopenmp" for g++ version < 4.2
-#include <stdlib.h>// Make : g++ -O3 -fopenmp smallpt.cpp -origin smallpt
-#include "../include/sphere.hpp"
-#include "../include/ray.hpp"
-#include "../include/object3d.hpp"
-#include "../include/hit.h"
-#include "../include/plane.hpp"
-#include "../include/triangle.hpp"
-#include "../include/mesh.hpp"
-#include "../include/revsurface.hpp"
+#include <cmath>  // smallpt, a Path Tracer by Kevin Beason, 2008
+#include <cstdio> //        Remove "-fopenmp" for g++ version < 4.2
+#include <cstdlib>// Make : g++ -O3 -fopenmp smallpt.cpp -origin smallpt
+#include "sphere.hpp"
+#include "ray.hpp"
+#include "object3d.hpp"
+#include "hit.h"
+#include "plane.hpp"
+#include "triangle.hpp"
+#include "mesh.hpp"
+#include "revsurface.hpp"
 #include <iostream>
 
-#define SCALAR 5
+#define SCALAR 10
 
 BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.6, 0) * SCALAR,
                                          Vector3f(-1, 1.5, 0) * SCALAR,
@@ -33,10 +33,9 @@ Object3D *objs[] = {
         new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, &texture),        //Botm
         new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF),   //Lite
-        new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
-//        new Mesh("mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
-         new RevSurface(&pCurve, 50, 50, DIFF, Vector3f(0, 0, 0), Vector3f(1, 1, 1) * .99)
-//        new Mesh("../mesh/bunny_200.obj", DIFF, Vector3f(1, 1, 1), Vector3f(0.75, 0.75, 0.75)),
+        // new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
+        // new Mesh("../mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
+        new RevSurface(&pCurve, 30, 75, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75) )
 };
 
 inline double clamp(double x) {
@@ -101,10 +100,10 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 1024, h = 768, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
+    int w = 512, h = 384, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
 
     double flength = 0;
-    double aperture = 0.05;
+    double aperture = 6;
 
     Ray cam(Vector3f(50, 52, 295.6), Vector3f(0, -0.042612, -1).normalized());      // cam pos, dir
 
@@ -154,5 +153,5 @@ int main(int argc, char *argv[]) {
     fprintf(f, "P3\n%d %d\n%d\n", w, h, 255);
     for (int i = 0; i < w * h; i++)
         fprintf(f, "%d %d %d ", toInt(c[i].x()), toInt(c[i].y()), toInt(c[i].z()));
-    system("python convert.py");
+    return 0;
 }
