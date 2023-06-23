@@ -9,6 +9,7 @@
 #include "triangle.hpp"
 #include "mesh.hpp"
 #include "revsurface.hpp"
+#include "moving.h"
 #include <iostream>
 
 #define SCALAR 7
