@@ -12,34 +12,34 @@
 #include "moving.h"
 #include <iostream>
 
-#define SCALAR 7
+#define SCALAR 13.5
 
-BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-1.2, 1.4, 0) * SCALAR,
-                                         Vector3f(-0.7, 1.3, 0) * SCALAR,
-                                         Vector3f(-1, 0.8, 0) * SCALAR,
-                                         Vector3f(-0.6, 0.4, 0) * SCALAR,
-                                         Vector3f(-0.4, 0.4, 0) * SCALAR,
-                                         Vector3f(-0.2, 0.15, 0) * SCALAR,
-                                         Vector3f(-0.7, 0, 0) * SCALAR,});
+BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.5, 0) * SCALAR,
+Vector3f(-0.4, 1, 0) * SCALAR,
+Vector3f(-0.3,0.5, 0) * SCALAR,
+Vector3f(-0.7, 0, 0) * SCALAR,});
 
 
 Mapping wood_texture = Mapping("texture/wood.jpg");
 
-BumpMapping wood_bump = BumpMapping("texture/wood2.png");
+BumpMapping wood_bump = BumpMapping("texture/wood_bump.png");
 
 NormalMapping normalTexture = NormalMapping("texture/Wall_n.png");
 
 Object3D *objs[] = {
-        new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}),  //Left
+        new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}), //Left
         new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}),//Rght
-        new Plane(Vector3f(0, 0, 1), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),        //Back
-        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, {&normalTexture}),              //Frnt
-        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, {&wood_texture,&wood_bump}),        //Botm
+        new Plane(Vector3f(0, 0, 1), 0, Vector3f(0,0,0), Vector3f(.99, .99, .99), DIFF), //Back
+        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, {&normalTexture}), //Frnt
+        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, {&wood_texture,&wood_bump}), //Botm
         new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
-        new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 11), Vector3f(), DIFF),   //Lite
-        // new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
-        // new Mesh("../mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
-       new RevSurface(&pCurve, 20, 105, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
+        new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 11), Vector3f(), DIFF), //Lite
+        new Sphere(10, Vector3f(30, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
+        new Triangle(Vector3f(0.1, 20, 45), Vector3f(0.1, 20, 125), Vector3f(0.1, 60, 45), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
+        new Triangle(Vector3f(0.1, 60, 45), Vector3f(0.1, 20, 125), Vector3f(0.1, 60, 125), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
+        new Moving(new Sphere(8,Vector3f(20,8,100),Vector3f(0,0,0),Vector3f(.75,.75,.75),DIFF),Vector3f(15,0,8)),
+        new Mesh("mesh/bunny_200.obj", Vector3f(70, 13, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
+        new RevSurface(&pCurve, 70, 80, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
 };
 
 inline double clamp(double x) {
@@ -104,10 +104,10 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 512, h = 384, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
+    int w = 1024, h = 768, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
 
-    double flength = 0;
-    double aperture = 6;
+    double flength = 215;
+    double aperture = 4;
 
     Ray cam(Vector3f(50, 52, 295.6), Vector3f(0, -0.042612, -1).normalized());      // cam pos, dir
 
@@ -145,7 +145,8 @@ int main(int argc, char *argv[]) {
 
                             Vector3f origin = cam.origin + p * aperture / 2;
                             Vector3f direction = d - p * aperture / 2;
-                            r = r + radiance(Ray(origin, direction.normalized()), 0, Xi) * (1. / samps);
+
+                            r = r + radiance(Ray(origin+direction.normalized()*140, direction.normalized()), 0, Xi) * (1. / samps);
                         }
 
 
