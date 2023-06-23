@@ -66,7 +66,7 @@ public:
         double r = int(tex_data[index]) / 255.0;
         double g = int(tex_data[index + 1]) / 255.0;
         double b = int(tex_data[index + 2]) / 255.0;
-        hit.hit_normal = hit.hit_normal + Vector3f(r - 0.5, g - 0.5, b - 0.5);
+        hit.hit_normal = hit.hit_normal + Vector3f(r - 0.5, g - 0.5, b - 0.5)*1.3;
     }
 };
 
@@ -86,7 +86,7 @@ public:
         double g = int(tex_data[index + 1]) / 255.0;
         double b = int(tex_data[index + 2]) / 255.0;
         double bump = (r + g + b) / 3.0;
-        hit.hit_pos = hit.hit_pos + hit.hit_normal * (float) bump;
+        hit.hit_pos = hit.hit_pos + hit.hit_normal * (float) bump * 4;
     }
 };
 
