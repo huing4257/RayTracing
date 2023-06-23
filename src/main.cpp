@@ -22,20 +22,21 @@ BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.6, 0) * SCALAR,
                                          Vector3f(-0.75, 0, 0) * SCALAR,});
 
 
-Mapping texture = Mapping("../texture/wood.jpg");
+Mapping wood_texture = Mapping("../texture/wood2.jpg");
+
 NormalMapping normalTexture = NormalMapping("../texture/Wall_n.png");
 
 Object3D *objs[] = {
-        new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, &normalTexture),  //Left
-        new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, &normalTexture),//Rght
+        new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}),  //Left
+        new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}),//Rght
         new Plane(Vector3f(0, 0, 1), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),        //Back
-        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, &normalTexture),              //Frnt
-        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, &texture),        //Botm
+        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, {&normalTexture}),              //Frnt
+        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, {&wood_texture}),        //Botm
         new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
         new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF),   //Lite
         // new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
         // new Mesh("../mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
-        new RevSurface(&pCurve, 30, 75, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75) )
+//        new RevSurface(&pCurve, 30, 75, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75) )
 };
 
 inline double clamp(double x) {
