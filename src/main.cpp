@@ -22,9 +22,9 @@ BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-1, 1.6, 0) * SCALAR,
                                          Vector3f(-0.75, 0, 0) * SCALAR,});
 
 
-Mapping wood_texture = Mapping("../texture/wood2.jpg");
+Mapping wood_texture = Mapping("texture/wood.jpg");
 
-NormalMapping normalTexture = NormalMapping("../texture/Wall_n.png");
+NormalMapping normalTexture = NormalMapping("texture/Wall_n.png");
 
 Object3D *objs[] = {
         new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}),  //Left

@@ -4,6 +4,8 @@
 #include "object3d.hpp"
 #include <cmath>
 #include "texture.h"
+#include <vector>
+
 
 // function: ax+by+cz=d
 // choose your representation , add more fields and fill in the functions
