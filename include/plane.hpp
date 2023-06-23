@@ -4,7 +4,9 @@
 #include "object3d.hpp"
 #include <cmath>
 #include "texture.h"
+#include <vector>
 
+using std::vector;
 // function: ax+by+cz=d
 // choose your representation , add more fields and fill in the functions
 
@@ -14,10 +16,11 @@ public:
 
     }
 
-    Plane(const Vector3f &normal, float d, Vector3f e_, Vector3f c_, Refl_t refl_, Texture* t = nullptr) : Object3D(refl_, e_, c_) {
+    Plane(const Vector3f &normal, float d, Vector3f e_, Vector3f c_, Refl_t refl_, vector<Texture *> t = {}) : Object3D(
+            refl_, e_, c_) {
         this->normal = normal;
         this->d = d;
-        this->texture = t;
+        this->textures = t;
     }
 
     ~Plane() override = default;
@@ -28,16 +31,16 @@ public:
             hit.t = t;
             hit.hit_pos = r.origin + r.direction * t;
             hit.hit_normal = normal;
-            hit.hit_color = color; 
-            if(texture != nullptr){
-                if(normal[0] == 0 && normal[2] == 0) {
-                    texture->change_hit(abs(hit.hit_pos[0]) / 100, abs(hit.hit_pos[2]) / 170, hit);
-                }
-                else if(normal[0] == 0 && normal[1] == 0) {
-                    texture->change_hit(abs(hit.hit_pos[0]) / 100, abs(hit.hit_pos[1]) / 81.6, hit);
-                }
-                else if(normal[1] == 0 && normal[2] == 0) {
-                    texture->change_hit(abs(hit.hit_pos[2]) / 170,abs(hit.hit_pos[1]) / 81.6, hit);
+            hit.hit_color = color;
+            for(auto texture:textures){
+                if (texture != nullptr) {
+                    if (normal[0] == 0 && normal[2] == 0) {
+                        texture->change_hit(abs(hit.hit_pos[0]) / 100, abs(hit.hit_pos[2]) / 170, hit);
+                    } else if (normal[0] == 0 && normal[1] == 0) {
+                        texture->change_hit(abs(hit.hit_pos[0]) / 100, abs(hit.hit_pos[1]) / 81.6, hit);
+                    } else if (normal[1] == 0 && normal[2] == 0) {
+                        texture->change_hit(abs(hit.hit_pos[2]) / 170, abs(hit.hit_pos[1]) / 81.6, hit);
+                    }
                 }
             }
             hit.refl = refl;
@@ -48,7 +51,7 @@ public:
 
     Vector3f normal;
     float d;
-    Texture *texture;
+    vector<Texture *> textures;
 protected:
 };
 

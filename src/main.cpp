@@ -22,20 +22,23 @@ BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.6, 0) * SCALAR,
                                          Vector3f(-0.75, 0, 0) * SCALAR,});
 
 
-Mapping texture = Mapping("../texture/wood.jpg");
-NormalMapping normalTexture = NormalMapping("../texture/Wall_n.png");
+Mapping wood_texture = Mapping("../texture/wood2_texture.jpg");
+BumpMapping wood_texture_bump = BumpMapping("../texture/wood2_bump.jpg");
+NormalMapping wall_texture = NormalMapping("../texture/Wall_n.png");
 
 Object3D *objs[] = {
-        new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, &normalTexture),  //Left
-        new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, &normalTexture),//Rght
-        new Plane(Vector3f(0, 0, 1), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),        //Back
-        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, &normalTexture),              //Frnt
-        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, &texture),        //Botm
-        new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
-        new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF),   //Lite
+        new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&wall_texture}),  //Left
+        new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&wall_texture}),//Rght
+        new Plane(Vector3f(0, 0, 1), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF),        //Back
+        new Plane(Vector3f(0, 0, -1), -170, Vector3f(0, 0, 0), Vector3f(0, 0, 0), DIFF,
+                  {&wall_texture}),              //Frnt
+        new Plane(Vector3f(0, 1, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF,
+                  {&wood_texture, &wood_texture_bump}),        //Botm
+        new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF),//Top
+//        new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF),   //Lite
         // new Sphere(10, Vector3f(20, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
         // new Mesh("../mesh/bunny_200.obj", Vector3f(70, 5, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
-        new RevSurface(&pCurve, 30, 75, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75) )
+//        new RevSurface(&pCurve, 30, 75, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
 };
 
 inline double clamp(double x) {
@@ -90,7 +93,7 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
     if ((cos2t = 1 - nnt * nnt * (1 - ddn * ddn)) < 0)// Total internal reflection
         return obj->e + f * (radiance(reflRay, depth, Xi));
     Vector3f tdir = (r.direction * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))).normalized();
-    double a = nt - nc, b = nt + nc, R0 = a * a / (b * b), c = 1 - (into ? -ddn : Vector3f::dot(n,tdir));
+    double a = nt - nc, b = nt + nc, R0 = a * a / (b * b), c = 1 - (into ? -ddn : Vector3f::dot(n, tdir));
     double Re = R0 + (1 - R0) * c * c * c * c * c, Tr = 1 - Re, P = .25 + .5 * Re, RP = Re / P, TP = Tr / (1 - P);
     return obj->e + f * (depth > 2 ? (erand48(Xi) < P ?// Russian roulette
                                       radiance(reflRay, depth, Xi) * RP
@@ -109,7 +112,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    Vector3f cx = Vector3f(w * .5135 / h,0,0), cy =
+    Vector3f cx = Vector3f(w * .5135 / h, 0, 0), cy =
             Vector3f::cross(cx, cam.direction).normalized() * .5135, r, *c = new Vector3f[w * h];
 
 #pragma omp parallel for schedule(dynamic, 1) private(r)// OpenMP
