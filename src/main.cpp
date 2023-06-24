@@ -15,9 +15,9 @@
 #define SCALAR 13.7
 
 BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.5, 0) * SCALAR,
-Vector3f(-0.4, 1, 0) * SCALAR,
-Vector3f(-0.3,0.5, 0) * SCALAR,
-Vector3f(-0.7, 0, 0) * SCALAR,});
+                                         Vector3f(-0.4, 1, 0) * SCALAR,
+                                         Vector3f(-0.3,0.5, 0) * SCALAR,
+                                         Vector3f(-0.7, 0, 0) * SCALAR,});
 
 
 Mapping wood_texture = Mapping("texture/wood.jpg");
@@ -27,19 +27,19 @@ BumpMapping wood_bump = BumpMapping("texture/wood_bump.png");
 NormalMapping normalTexture = NormalMapping("texture/Wall_n.png");
 
 Object3D *objs[] = {
+        new Triangle(Vector3f(0.2, 15, 30), Vector3f(0.2, 15, 130), Vector3f(0.2, 60, 30), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
+        new Triangle(Vector3f(0.2, 60, 30), Vector3f(0.2, 15, 130), Vector3f(0.2, 60, 130), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
         new Plane(Vector3f(1, 0, 0), 0, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}), //Left
         new Plane(Vector3f(-1, 0, 0), -100, Vector3f(0, 0, 0), Vector3f(.75, .75, .75), DIFF, {&normalTexture}),//Rght
         new Plane(Vector3f(0, 0, 1), 0, Vector3f(0,0,0), Vector3f(.99, .99, .99), DIFF), //Back
         new Plane(Vector3f(0, 0, -1), -170, Vector3f(0,0,0), Vector3f(0,0,0), DIFF, {&normalTexture}), //Frnt
         new Plane(Vector3f(0, 1, 0), 0, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF, {&wood_texture,&wood_bump}), //Botm
-        new Plane(Vector3f(0, -1, 0), -81.6, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
-        new Sphere(600, Vector3f(50, 681.6 - .27, 81.6), Vector3f(12, 12, 11), Vector3f(), DIFF), //Lite
-        new Sphere(10, Vector3f(30, 10, 50), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
-        new Triangle(Vector3f(0.1, 20, 45), Vector3f(0.1, 20, 125), Vector3f(0.1, 60, 45), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
-        new Triangle(Vector3f(0.1, 60, 45), Vector3f(0.1, 20, 125), Vector3f(0.1, 60, 125), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
-        new Moving(new Sphere(8,Vector3f(20,8,100),Vector3f(0,0,0),Vector3f(.75,.75,.75),DIFF),Vector3f(15,0,8)),
-        new Mesh("mesh/bunny_200.obj", Vector3f(70, 13, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
-        new RevSurface(&pCurve, 70, 77, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
+        new Plane(Vector3f(0, -1, 0), -82.2, Vector3f(0,0,0), Vector3f(.75, .75, .75), DIFF),//Top
+        new Sphere(600, Vector3f(50, 682.2 - .29, 81.6), Vector3f(12, 12, 12), Vector3f(), DIFF), //Lite
+        new Sphere(10, Vector3f(35, 10, 30), Vector3f(0,0,0), Vector3f(.99, .99, .99), REFR),
+        new Moving(new Sphere(8,Vector3f(20,8,100),Vector3f(0,0,0),Vector3f(.75,.75,.75),DIFF),Vector3f(8,0,2)),
+        new Mesh("mesh/bunny_200.obj", Vector3f(73, 13, 83), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
+        new RevSurface(&pCurve, 70, 80, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
 };
 
 inline double clamp(double x) {
@@ -94,7 +94,7 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
     if ((cos2t = 1 - nnt * nnt * (1 - ddn * ddn)) < 0)// Total internal reflection
         return obj->e + f * (radiance(reflRay, depth, Xi));
     Vector3f tdir = (r.direction * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))).normalized();
-    double a = nt - nc, b = nt + nc, R0 = a * a / (b * b), c = 1 - (into ? -ddn : Vector3f::dot(n,tdir));
+    double a = nt - nc, b = nt + nc, R0 = a * a / (b * b), c = 1 - (into ? -ddn : Vector3f::dot(n, tdir));
     double Re = R0 + (1 - R0) * c * c * c * c * c, Tr = 1 - Re, P = .25 + .5 * Re, RP = Re / P, TP = Tr / (1 - P);
     return obj->e + f * (depth > 2 ? (erand48(Xi) < P ?// Russian roulette
                                       radiance(reflRay, depth, Xi) * RP
@@ -104,16 +104,16 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 320, h = 240, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
+    int w = 512, h = 384, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
 
-    double flength = 215;
+    double flength = 0;
     double aperture = 6;
 
     Ray cam(Vector3f(50, 52, 295.6), Vector3f(0, -0.042612, -1).normalized());      // cam pos, dir
 
 
 
-    Vector3f cx = Vector3f(w * .5135 / h,0,0), cy =
+    Vector3f cx = Vector3f(w * .5135 / h, 0, 0), cy =
             Vector3f::cross(cx, cam.direction).normalized() * .5135, r, *c = new Vector3f[w * h];
 
 #pragma omp parallel for schedule(dynamic, 1) private(r)// OpenMP
@@ -145,8 +145,7 @@ int main(int argc, char *argv[]) {
 
                             Vector3f origin = cam.origin + p * aperture / 2;
                             Vector3f direction = d - p * aperture / 2;
-
-                            r = r + radiance(Ray(origin+direction.normalized()*140, direction.normalized()), 0, Xi) * (1. / samps);
+                            r = r + radiance(Ray(origin, direction.normalized()), 0, Xi) * (1. / samps);
                         }
 
 

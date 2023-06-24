@@ -9,7 +9,7 @@
 
 class Box{
 public:
-    static bool is_intersect(Vector3f min, Vector3f max, const Ray &r, double tmin, double *t = nullptr) {
+    static bool is_intersect(Vector3f min, Vector3f max, const Ray &r, double tmin, float *t = nullptr) {
         double t11 = (min.x()- r.origin.x()) / r.direction.x();
         double t12 = (max.x()- r.origin.x()) / r.direction.x();
         double t13 = (min.y()- r.origin.y()) / r.direction.y();

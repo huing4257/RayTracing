@@ -47,8 +47,8 @@ public:
     }
 
     bool newtonIntersect(const Ray &r, Hit &hit) {
-        float t, theta, mu;
-        if (!Box::is_intersect(vmin, vmax, r, 1e-5) || t > hit.t) return false;
+        float t , theta, mu;
+        if (!Box::is_intersect(vmin, vmax, r, 1e-5,&t)||t > hit.t) return false;
         getUV(r, t, theta, mu);
         Vector3f normal, point;
         if (!newton(r, t, theta, mu, normal, point)) {
