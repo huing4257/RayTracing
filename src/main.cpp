@@ -12,7 +12,7 @@
 #include "moving.h"
 #include <iostream>
 
-#define SCALAR 13.5
+#define SCALAR 13.7
 
 BezierCurve pCurve(std::vector<Vector3f>{Vector3f(-0.9, 1.5, 0) * SCALAR,
 Vector3f(-0.4, 1, 0) * SCALAR,
@@ -39,7 +39,7 @@ Object3D *objs[] = {
         new Triangle(Vector3f(0.1, 60, 45), Vector3f(0.1, 20, 125), Vector3f(0.1, 60, 125), SPEC, Vector3f(0, 0, 0), Vector3f(.99, .99, .99)),
         new Moving(new Sphere(8,Vector3f(20,8,100),Vector3f(0,0,0),Vector3f(.75,.75,.75),DIFF),Vector3f(15,0,8)),
         new Mesh("mesh/bunny_200.obj", Vector3f(70, 13, 80), DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75)),
-        new RevSurface(&pCurve, 70, 80, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
+        new RevSurface(&pCurve, 70, 77, DIFF, Vector3f(0, 0, 0), Vector3f(.75, .75, .75))
 };
 
 inline double clamp(double x) {
@@ -104,10 +104,10 @@ Vector3f radiance(const Ray &r, int depth, unsigned short *Xi) {
 }
 
 int main(int argc, char *argv[]) {
-    int w = 1024, h = 768, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
+    int w = 320, h = 240, samps = argc >= 2 ? atoi(argv[1]) / 4 : 5;// # samples
 
     double flength = 215;
-    double aperture = 4;
+    double aperture = 6;
 
     Ray cam(Vector3f(50, 52, 295.6), Vector3f(0, -0.042612, -1).normalized());      // cam pos, dir
 
